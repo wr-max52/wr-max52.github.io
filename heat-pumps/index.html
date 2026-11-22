@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Heat Pump Adoption in Cold Climates: A Brief Summary of Supporting and Contradicting Sources</title><script>
+(function () {
+  try {
+    var theme = localStorage.getItem("theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+  window.toggleTheme = function () {
+    try {
+      var theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    } catch (e) {}
+  };
+})();
+</script><style>
+:root { --bg:#fbfaf7; --fg:#1d1d1f; --muted:#6b6b70; --rule:#e3e1dc; --accent:#8a2b2b; --quote:#f1efe9; }
+:root[data-theme="dark"] { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                           --accent:#e08a8a; --quote:#1f1f23; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                            --accent:#e08a8a; --quote:#1f1f23; }
+}
+* { box-sizing: border-box; }
+html[data-theme="dark"] { color-scheme: dark; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font: 18px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; }
+main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+a { color: var(--accent); }
+header.site { font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; letter-spacing: .08em;
+              text-transform: uppercase; margin-bottom: 2rem; }
+header.site a { color: var(--muted); text-decoration: none; }
+h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; }
+h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+.dek { font-size: 1.2rem; color: var(--muted); margin: 0 0 .75rem; }
+.meta { font: 0.85rem/1.4 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+sup a { text-decoration: none; font: 600 0.7rem -apple-system, system-ui, sans-serif; }
+ol.sources { padding-left: 1.4rem; font-size: 0.95rem; }
+ol.sources li { margin-bottom: 1rem; }
+ol.sources blockquote { margin: .35rem 0 0; padding: .5rem .75rem; background: var(--quote);
+                        border-left: 3px solid var(--rule); }
+.stance { font: 600 0.7rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
+          letter-spacing: .06em; color: var(--muted); }
+.note { font: 0.85rem/1.5 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-top: 1px solid var(--rule); margin-top: 2.5rem; padding-top: 1rem; }
+ul.index { list-style: none; padding: 0; }
+ul.index li { border-bottom: 1px solid var(--rule); padding: 1.1rem 0; }
+ul.index a.title { font-size: 1.25rem; font-weight: 600; text-decoration: none; color: var(--fg); }
+ul.index p { margin: .3rem 0 0; color: var(--muted); }
+.epic { display:inline-block; font: 600 0.72rem/1.3 -apple-system, system-ui, sans-serif; white-space:nowrap;
+        padding: .12rem .5rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted);
+        vertical-align: middle; }
+.epic.proposed { border-style: dashed; }
+.theme-toggle { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .55rem;
+               border:1px solid var(--rule); border-radius:999px; background:var(--bg); color:var(--fg);
+               font:600 0.8rem/1 -apple-system, system-ui, sans-serif; cursor:pointer; }
+.theme-toggle:hover { border-color:var(--muted); }
+.theme-toggle svg { width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:2;
+                    stroke-linecap:round; stroke-linejoin:round; display:none; }
+html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
+html[data-theme="dark"] .theme-toggle .sun { display:block; }
+</style></head>
+<body><main><header class="site"><a href="../">Mission Loop</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
+<article><h1>Heat Pump Adoption in Cold Climates: A Brief Summary of Supporting and Contradicting Sources</h1>
+<p class="dek">According to the available research brief, three sources support a single claim concerning heat pump adoption in cold climates while a fourth source offers a contradicting counterpoint [s1, s2, s3, s4].</p>
+<p class="meta">Published November 18, 2026 · 4 sources</p>
+<h2>The Thesis</h2>
+<p>The research brief sets forth a thesis concerning heat pump adoption in cold climates <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. As recorded in the brief, the thesis is described as a stub thesis about heat pump adoption in cold climates, indicating that the topic under examination is the uptake of heat-pump technology in regions characterised by cold weather <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. The brief provides no further elaboration on the specific arguments, evidence, or policy context underlying this thesis beyond the placeholder description itself <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. No claims of kind possibility appear in the brief, and therefore no unverified or speculative assertions are included in this article <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p>
+<h2>The Supporting Claim</h2>
+<p>The brief contains a single factual claim, identified in the document as a stub claim, which is attributed jointly to sources A and B <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. Source A, titled A, is listed with a stance of supports, and its associated quote is the single word stub <sup><a href="#src-1">[1]</a></sup>. Source B, titled B, likewise carries a stance of supports and the identical quote of stub <sup><a href="#src-2">[2]</a></sup>. The claim itself, as recorded in the brief, is the placeholder text stub claim, and no additional factual assertions beyond this single entry appear in the document <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. Because the claim is a placeholder, the specific substance of what sources A and B assert about heat pump adoption in cold climates is not detailed in the brief <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>.</p>
+<h2>Further Support from Source C</h2>
+<p>A third source, titled C and identified as s3, is listed in the brief with a stance of supports <sup><a href="#src-3">[3]</a></sup>. Its associated quote is stub, matching the quotes recorded for sources A and B <sup><a href="#src-3">[3]</a></sup><sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. Although source C is not directly attached to the single claim in the brief, its supportive stance aligns it with sources A and B in relation to the overall thesis on heat pump adoption in cold climates <sup><a href="#src-3">[3]</a></sup><sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. The brief does not specify a separate claim for source C; rather, source C is presented as an additional point of support for the position taken by the other two sources <sup><a href="#src-3">[3]</a></sup><sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>.</p>
+<h2>The Counterpoint</h2>
+<p>The brief includes a counterpoint described as a stub counterpoint answering s4, which is associated with source D <sup><a href="#src-4">[4]</a></sup>. Source D, titled D, carries a stance of contradicts, and its quote is the single word stub <sup><a href="#src-4">[4]</a></sup>. This counterpoint is presented as a response to source s4, indicating that source D challenges or disputes the position taken by the supporting sources <sup><a href="#src-4">[4]</a></sup><sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup>. The brief does not elaborate further on the substance of this contradiction beyond the placeholder text provided, and no additional contradicting sources are listed <sup><a href="#src-4">[4]</a></sup>. The presence of this single counterpoint means that the evidentiary picture in the brief is not unanimous: three sources support the claim, while one source contradicts it <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p>
+<h2>Scope and Limitations</h2>
+<p>The research brief from which this article is drawn is limited in scope and is best understood as a preliminary or placeholder document <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. It contains one factual claim, one counterpoint, and four sources, three of which support the claim and one of which contradicts it <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. No claims of kind possibility appear in the brief, and no additional facts, figures, names, dates, or quotations beyond the placeholder text stub are provided by any of the four sources <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. Readers should note that the content of the brief does not constitute a full evidentiary record on heat pump adoption in cold climates and that the placeholder nature of the text limits the analytical depth that can be drawn from it <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p>
+<h2>Sources</h2><ol class="sources">
+<li id="src-1" value="1"><span class="stance">supports</span><br><a href="https://a.example.com">A</a><blockquote>stub</blockquote></li>
+<li id="src-2" value="2"><span class="stance">supports</span><br><a href="https://b.example.com">B</a><blockquote>stub</blockquote></li>
+<li id="src-3" value="3"><span class="stance">supports</span><br><a href="https://c.example.com">C</a><blockquote>stub</blockquote></li>
+<li id="src-4" value="4"><span class="stance">contradicts</span><br><a href="https://d.example.com">D</a><blockquote>stub</blockquote></li>
+</ol>
+<p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. A human approved the research and reviewed this article before it was published.</p></article>
+</main></body></html>
