@@ -1771,7 +1771,7 @@ const CLOSERS = {
   other: ["Done here!", "That's a wrap.", "My work here is cited.", "Fin."],
 };
 function closer(c) {
-  const key = !c.running ? "off" : c.handoff ? (c.worker === "assistant" ? "gathered" : "handoff")
+  const key = !c.running ? "off" : c.handoff ? (crewKey(c.worker) === "assistant" ? "gathered" : "handoff")
     : c.from.step === "finder" || c.from.step === "theorist" ? c.from.step
     : ["1f916", "github", "bluesky"].includes(c.from.step) && c.outcome === "DONE" ? "posted"
     : CLOSERS[c.outcome] ? c.outcome : "other";
@@ -2166,7 +2166,8 @@ class Stage {
 // as long as the step is lit, runs after the worker's mission when it moves on, and hands off to a newcomer
 // (a closing line, a walk off the nearer end) when the work ends, moves to another mission or passes to the
 // other worker. Each researcher stands on a slot: the stage with its own home step and mood.
-const crewKey = w => (CAST.some(k => ROSTER[k].worker === w) ? w : null);   // "desk" work: anyone
+// A seat is a copy of a worker ("assistant-2" works for "assistant"), so its crew is that worker's.
+const crewKey = seat => { const w = String(seat || "").split("-")[0]; return CAST.some(k => ROSTER[k].worker === w) ? w : null; };   // "desk" work: anyone
 const fits = (kind, w) => !crewKey(w) || ROSTER[kind].worker === w;
 class FlowStage extends Stage {
   constructor(host) { super(host, "flow"); }

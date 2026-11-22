@@ -76,7 +76,7 @@ async function poll() {
 function apply(d) {
   const shown = new Set([...root.querySelectorAll(".flow-track [data-step]")].map(e => e.dataset.step));
   const working = d.working.filter(e => shown.has(e.step)), lit = {};
-  for (const e of working) lit[e.step] = e.worker;
+  for (const e of working) lit[e.step] = e.worker.split("-")[0];   // a seat ("assistant-2") lights its worker's colours
   root.classList.toggle("off", !d.running);
   root.querySelectorAll(".step[data-step], .check[data-step]").forEach(e => {
     const w = lit[e.dataset.step];
@@ -133,7 +133,7 @@ function relightCards(working) {
       if (doing.textContent !== shown) doing.textContent = shown;
     }
     if (!card.closest("[data-lab-ok]")) return;
-    const lab = e ? "busy" : null, worker = e && e.worker !== "desk" ? e.worker : null;
+    const lab = e ? "busy" : null, worker = e && e.worker !== "desk" ? e.worker.split("-")[0] : null;   // the seat's crew
     if ((card.dataset.lab || null) === lab && (card.dataset.worker || null) === worker) return;
     if (lab) card.dataset.lab = lab; else delete card.dataset.lab;
     if (worker) card.dataset.worker = worker; else delete card.dataset.worker;
