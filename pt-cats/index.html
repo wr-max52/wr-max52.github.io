@@ -20,17 +20,37 @@
                            --accent:#e08a8a; --quote:#1f1f23; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
-                            --accent:#e08a8a; --quote:#1f1f23; }
+                            --accent:#e08a8a; --quote:#1f1f23; color-scheme: dark; }
 }
 * { box-sizing: border-box; }
 html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
 body { margin:0; background:var(--bg); color:var(--fg);
        font: 18px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; }
 main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
 a { color: var(--accent); }
 header.site { font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; letter-spacing: .08em;
-              text-transform: uppercase; margin-bottom: 2rem; }
+              text-transform: uppercase; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+              flex-wrap: wrap; }
 header.site a { color: var(--muted); text-decoration: none; }
+header.site a:hover, header.site a[aria-current] { color: var(--fg); }
+header.site .brand { margin-right: auto; }
+.back { display: inline-block; font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; color: var(--muted);
+        text-decoration: none; margin-bottom: 1.2rem; }
+.back:hover { color: var(--fg); }
+nav.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem;
+            font: 0.9rem/1.4 -apple-system, system-ui, sans-serif; }
+nav.pager a { text-decoration: none; max-width: 48%; }
+nav.pager .older { margin-left: auto; text-align: right; }
+nav.pager small { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+nav.tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
+nav.tags a { font: 600 0.8rem/1.3 -apple-system, system-ui, sans-serif; padding: .25rem .7rem; border-radius: 999px;
+             border: 1px solid var(--rule); color: var(--muted); text-decoration: none; }
+nav.tags a:hover { border-color: var(--muted); color: var(--fg); }
+nav.tags a.on { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+nav.tags span { opacity: .65; font-weight: 400; margin-left: .2rem; }
+a.epic { text-decoration: none; }
+a.epic:hover { border-color: var(--muted); color: var(--fg); }
 h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; }
 h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
 .dek { font-size: 1.2rem; color: var(--muted); margin: 0 0 .75rem; }
@@ -62,10 +82,10 @@ ul.index p { margin: .3rem 0 0; color: var(--muted); }
 html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
 html[data-theme="dark"] .theme-toggle .sun { display:block; }
 </style></head>
-<body><main><header class="site"><a href="../">Mission Loop</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
-<article><h1>Peer-Reviewed Necropsy Study Finds Indoor Cat Longevity Advantage Concentrated in First Year of Life</h1>
+<body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
+<a class="back" href="../">&larr; All articles</a><article><h1>Peer-Reviewed Necropsy Study Finds Indoor Cat Longevity Advantage Concentrated in First Year of Life</h1>
 <p class="dek">A 2022 study of 3,108 cats shows that the widely cited gap between indoor and outdoor cat lifespans is driven largely by early mortality rather than a uniform decade-long difference.</p>
-<p class="meta"><span class="epic">Anthropology Rehistory</span> Published November 18, 2026 · 4 sources</p>
+<p class="meta"><a class="epic" href="../?tag=Rehistory" title="Every article tagged Rehistory">Rehistory</a> Published November 18, 2026 · 4 sources</p>
 <h2>What the Study Found</h2>
 <p>The largest single-institution necropsy study of cat mortality, published in PLOS One in 2022 by Kent et al., found that indoor cats live longer than outdoor cats on average, but the popular claim that indoor cats live 10 years longer than outdoor cats is overstated <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. Among cats that survived past their first year, indoor, indoor-outdoor, and outdoor cats had statistically indistinguishable median lifespans of approximately 10 years, with the indoor longevity advantage concentrated in the first year of life when outdoor cats face disproportionate mortality from trauma, disease, and predation <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. The finding suggests that the indoor advantage is not a uniform decade-long gap but rather a survival benefit that matters most during the earliest and most vulnerable period of a cat's life <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>.</p>
 <h2>The Numbers Behind the Finding</h2>
@@ -81,4 +101,23 @@ html[data-theme="dark"] .theme-toggle .sun { display:block; }
 <li id="src-4" value="4"><span class="stance">supports</span><br><a href="https://everycat.org/cat-health/demographics-life-and-death-of-cats-in-england/">Demographics - life and death of cats in England — EveryCat Health Foundation (O&#x27;Neill et al. 2015)</a><blockquote>Overall, the median longevity in all of the cats was 14 years.</blockquote></li>
 </ol>
 <p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. A human approved the research and reviewed this article before it was published.</p></article>
+<nav class="pager" data-slug="pt-cats" data-feed="../feed.json" aria-label="More articles"></nav><script>
+(function () {
+  var nav = document.querySelector("nav.pager");
+  if (!nav || !window.fetch) return;
+  fetch(nav.dataset.feed).then(function (r) { return r.json(); }).then(function (feed) {
+    var items = feed.items || [], at = items.findIndex(function (e) { return e.id === nav.dataset.slug; });
+    if (at < 0) return;
+    function link(e, cls, label) {
+      if (!e) return;
+      var a = document.createElement("a"), small = document.createElement("small");
+      a.className = cls; a.href = "../" + encodeURIComponent(e.id) + "/";
+      small.textContent = label; a.appendChild(small); a.appendChild(document.createTextNode(e.title));
+      nav.appendChild(a);
+    }
+    link(items[at - 1], "newer", "← Newer");
+    link(items[at + 1], "older", "Older →");
+  }).catch(function () {});
+})();
+</script>
 </main></body></html>

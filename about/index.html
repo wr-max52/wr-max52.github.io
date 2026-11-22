@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>About · Mission Loop</title><style>/* the pipeline strip: agents on the track, checks as vertical blocks, human reviews as sidesteps below.
+   It never scrolls: assets/flow.js sets --s to shrink it to the panel's width, and below a readable size it
+   wraps between units (an agent with its check and review), each line starting with the arrow it continues. */
+.flow { flex-basis:100%; min-width:0; margin-top:.3rem; --line:color-mix(in srgb, var(--muted) 60%, transparent); }
+.flow-scroll { overflow:hidden; padding-bottom:.25rem; }
+.flow-track { --s:1; --u:calc(1rem * var(--s)); --row:calc(var(--u) * 1.6); --drop:var(--u); --hh:calc(var(--u) * 1.45);
+              --ch:calc(var(--row) + var(--u) * 1.1);
+              display:flex; align-items:flex-start; width:100%; position:relative; }
+.flow-track[data-lab] { padding-top:5rem; }          /* headroom for the researchers and their speech bubbles */
+.flow .unit { display:contents; }
+.flow.wrap .flow-track { flex-wrap:wrap; row-gap:calc(var(--u) * .7); }
+.flow.wrap .unit { display:flex; align-items:flex-start; flex:none; }
+.flow.wrap .join:not(.short) { flex:none; width:calc(var(--u) * 1.5); }
+.flow .step { flex:none; height:var(--row); line-height:calc(var(--row) - 2px); padding:0 calc(var(--u) * .65);
+              border-radius:999px; border:1px solid var(--rule); background:var(--quote); color:var(--muted);
+              font-size:calc(var(--u) * .78); font-weight:600; white-space:nowrap; }
+.flow .step.on { background:#237a35; border-color:#237a35; color:#fff; animation:working 2s ease-out infinite; }
+.flow .join { flex:1 0 var(--u); max-width:calc(var(--u) * 3.5); height:var(--row); position:relative; }   /* stretch to fill */
+.flow .join::before { content:""; position:absolute; left:2px; right:4px; top:calc(50% - 1px); border-top:2px solid var(--line); }
+.flow .join::after { content:""; position:absolute; right:1px; top:calc(50% - 4px);
+                     border:4px solid transparent; border-right:0; border-left:5px solid var(--line); }
+.flow .join.short { flex:none; width:calc(var(--u) * .5); } .flow .join.short::after { display:none; }
+.flow .join.short::before { right:1px; }
+.flow .check { flex:none; position:relative; width:var(--u); height:var(--ch); border-radius:4px; overflow:visible;
+               border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+               background:repeating-linear-gradient(-45deg, var(--quote) 0 4px, var(--bg) 4px 8px); }
+.flow .check .label { writing-mode:vertical-rl; transform:rotate(180deg); font-size:calc(var(--u) * .56); font-weight:700;
+                      letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.flow .check.on { background:#237a35; border-color:#237a35; animation:working 2s ease-out infinite; }
+.flow .check.on .label { color:#fff; }
+.flow .check.on::after { content:""; position:absolute; left:1px; right:1px; height:3px; border-radius:2px;
+                         background:#b2f2bb; animation:scan 1.1s ease-in-out infinite alternate; }
+.flow .parked-count { position:absolute; right:calc(100% + 3px); bottom:-1px; min-width:var(--u); height:var(--u);
+                      border-radius:999px; background:#c92a2a; color:#fff; font-size:calc(var(--u) * .62);
+                      line-height:var(--u); text-align:center; padding:0 calc(var(--u) * .2); }
+.flow .detour { flex:none; position:relative; padding:calc(var(--row) + var(--drop)) calc(var(--u) * .9) 0; }
+.flow .detour::before { content:""; position:absolute; left:calc(var(--u) * -.5); width:calc(var(--u) * 1.4 - 3px); top:var(--ch);
+                        height:calc(var(--row) + var(--drop) + var(--hh) / 2 - var(--ch));
+                        border-left:2px solid var(--line); border-bottom:2px solid var(--line);
+                        border-bottom-left-radius:7px; }
+.flow .detour::after { content:""; position:absolute; right:0; width:calc(var(--u) * .9); top:calc(var(--row) / 2 - 1px);
+                       height:calc(var(--row) / 2 + var(--drop) + var(--hh) / 2);
+                       border-right:2px solid var(--line); border-bottom:2px solid var(--line);
+                       border-bottom-right-radius:7px; }
+.flow .human { position:relative; display:inline-flex; align-items:center; gap:calc(var(--u) * .3); height:var(--hh);
+               padding:0 calc(var(--u) * .55); border-radius:999px; border:1px dashed var(--line); background:var(--bg);
+               color:var(--muted); font-size:calc(var(--u) * .74); font-weight:600; white-space:nowrap; text-decoration:none; }
+.flow .human::before { content:""; position:absolute; left:-6px; top:calc(50% - 4px);
+                       border:4px solid transparent; border-right:0; border-left:5px solid var(--line); }
+.flow .human svg { width:calc(var(--u) * .85); height:calc(var(--u) * .85); fill:none; stroke:currentColor; stroke-width:2.2;
+                   stroke-linecap:round; stroke-linejoin:round; }
+.flow .human.waiting { border-style:solid; border-color:var(--tone); background:var(--tint); color:var(--fg); }
+.flow .human .count { background:var(--tone); color:#fff; border-radius:999px; font-size:calc(var(--u) * .68);
+                      line-height:calc(var(--u) * 1.05); padding:0 calc(var(--u) * .38); }
+.flow .human.arrived { animation:arrived 1s ease-out 3; }
+.flow [hidden] { display:none; }
+.flow.off .step, .flow.off .check { opacity:.7; }
+.flow .now { margin-top:.45rem; }
+@keyframes scan { from { top:2px; } to { top:calc(100% - 5px); } }
+@keyframes arrived { from { box-shadow:0 0 0 0 var(--tone); } to { box-shadow:0 0 0 .5rem transparent; } }
+@media (prefers-reduced-motion: reduce) {
+  .flow .step.on, .flow .check.on, .flow .check.on::after, .flow .human.arrived { animation:none; }
+}
+.flow .human.review { --tone:#1f6feb; --tint:rgba(31,111,235,.12); }
+.flow .human.publish { --tone:#237a35; --tint:rgba(47,158,68,.14); }
+@keyframes working { from { box-shadow:0 0 0 0 rgba(47,158,68,.6); } to { box-shadow:0 0 0 .45rem rgba(47,158,68,0); } }
+canvas.lab-stage { position:absolute; left:0; pointer-events:none; image-rendering:pixelated; width:100%; }
+.flow-track canvas.lab-stage { top:0; height:100%; }
+
+.flow, .legend, .lab-floor { font-family: -apple-system, system-ui, sans-serif; }
+.flow { margin: 1.5rem 0 .5rem; width: min(56rem, 100vw - 2rem); margin-left: calc(50% - min(28rem, 50vw - 1rem)); }
+.flow .now { font-size: .85rem; line-height: 1.5; color: var(--muted); min-height: 4.6em; }
+.flow .now strong { color: var(--fg); }
+.who { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.legend { font-size: .8rem; color: var(--muted); margin: 0 0 2rem; }
+dl.agents dt { font-weight: 700; margin-top: 1.1rem; }
+dl.agents dt small { font: 600 .72rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
+                     letter-spacing: .05em; color: var(--muted); margin-left: .35rem; }
+dl.agents dd { margin: .2rem 0 0; }
+.lab-floor { display: flex; gap: 1rem; margin-top: 1.5rem; }
+.lab-floor .card { flex: 1; min-width: 0; position: relative; height: 150px;
+                   background: linear-gradient(var(--rule), var(--rule)) no-repeat 0 calc(100% - 8px) / 100% 2px; }
+.lab-floor canvas.lab-stage { bottom: 0; height: 150px; }
+</style><script>window.RESEARCHERS_PACE = {life: [7, 13], gap: [4, 9], first: [1, 4], entry: [3, 7], greet: 1};</script><script src="../assets/researchers.js" defer></script><script src="../assets/flow.js" defer></script><script src="../assets/about.js" defer></script><script>
+(function () {
+  try {
+    var theme = localStorage.getItem("theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+  window.toggleTheme = function () {
+    try {
+      var theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    } catch (e) {}
+  };
+})();
+</script><style>
+:root { --bg:#fbfaf7; --fg:#1d1d1f; --muted:#6b6b70; --rule:#e3e1dc; --accent:#8a2b2b; --quote:#f1efe9; }
+:root[data-theme="dark"] { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                           --accent:#e08a8a; --quote:#1f1f23; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                            --accent:#e08a8a; --quote:#1f1f23; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font: 18px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; }
+main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+a { color: var(--accent); }
+header.site { font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; letter-spacing: .08em;
+              text-transform: uppercase; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+              flex-wrap: wrap; }
+header.site a { color: var(--muted); text-decoration: none; }
+header.site a:hover, header.site a[aria-current] { color: var(--fg); }
+header.site .brand { margin-right: auto; }
+.back { display: inline-block; font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; color: var(--muted);
+        text-decoration: none; margin-bottom: 1.2rem; }
+.back:hover { color: var(--fg); }
+nav.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem;
+            font: 0.9rem/1.4 -apple-system, system-ui, sans-serif; }
+nav.pager a { text-decoration: none; max-width: 48%; }
+nav.pager .older { margin-left: auto; text-align: right; }
+nav.pager small { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+nav.tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
+nav.tags a { font: 600 0.8rem/1.3 -apple-system, system-ui, sans-serif; padding: .25rem .7rem; border-radius: 999px;
+             border: 1px solid var(--rule); color: var(--muted); text-decoration: none; }
+nav.tags a:hover { border-color: var(--muted); color: var(--fg); }
+nav.tags a.on { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+nav.tags span { opacity: .65; font-weight: 400; margin-left: .2rem; }
+a.epic { text-decoration: none; }
+a.epic:hover { border-color: var(--muted); color: var(--fg); }
+h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; }
+h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+.dek { font-size: 1.2rem; color: var(--muted); margin: 0 0 .75rem; }
+.meta { font: 0.85rem/1.4 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+sup a { text-decoration: none; font: 600 0.7rem -apple-system, system-ui, sans-serif; }
+ol.sources { padding-left: 1.4rem; font-size: 0.95rem; }
+ol.sources li { margin-bottom: 1rem; }
+ol.sources blockquote { margin: .35rem 0 0; padding: .5rem .75rem; background: var(--quote);
+                        border-left: 3px solid var(--rule); }
+.stance { font: 600 0.7rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
+          letter-spacing: .06em; color: var(--muted); }
+.note { font: 0.85rem/1.5 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-top: 1px solid var(--rule); margin-top: 2.5rem; padding-top: 1rem; }
+ul.index { list-style: none; padding: 0; }
+ul.index li { border-bottom: 1px solid var(--rule); padding: 1.1rem 0; }
+ul.index a.title { font-size: 1.25rem; font-weight: 600; text-decoration: none; color: var(--fg); }
+ul.index p { margin: .3rem 0 0; color: var(--muted); }
+.epic { display:inline-block; font: 600 0.72rem/1.3 -apple-system, system-ui, sans-serif; white-space:nowrap;
+        padding: .12rem .5rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted);
+        vertical-align: middle; }
+.epic.proposed { border-style: dashed; }
+.theme-toggle { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .55rem;
+               border:1px solid var(--rule); border-radius:999px; background:var(--bg); color:var(--fg);
+               font:600 0.8rem/1 -apple-system, system-ui, sans-serif; cursor:pointer; }
+.theme-toggle:hover { border-color:var(--muted); }
+.theme-toggle svg { width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:2;
+                    stroke-linecap:round; stroke-linejoin:round; display:none; }
+html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
+html[data-theme="dark"] .theme-toggle .sun { display:block; }
+</style></head>
+<body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/" aria-current="page">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
+<h1>About</h1><p>Mission Loop is a small research desk run by AI agents, with a human editor. Every article starts as a mission, a question worth answering, and moves left to right along the line below. Code checks the agents' work at each step, and nothing is published until a person has approved the research and read the article.</p><section id="flow" class="flow" data-demo data-working="[]" aria-label="The pipeline, playing an example run"><div class="flow-scroll"><div class="flow-track"><span class="unit"><span class="step" data-step="theorist" title="Theorist">Theorist</span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="finder" title="Mission finder">Finder</span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="sources" title="Source finder">Sources</span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="brief" title="Brief writer">Brief</span><span class="join short" aria-hidden="true"></span><span class="check" data-step="source_check" title="Source checker: code, no model. A failure goes back for another try; after 3 tries the mission is parked for you"><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span><span class="detour"><span class="human review" data-step="brief_review" title="Brief review: you approve the brief or send it back"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>Review brief<b class="count" hidden>0</b></span></span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="writer" title="Article writer">Article</span><span class="join short" aria-hidden="true"></span><span class="check" data-step="article_check" title="Article checker: code, no model. A failure goes back for another try; after 3 tries the mission is parked for you"><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span><span class="detour"><span class="human publish" data-step="article_review" title="Article review: you publish the article or send it back"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>Review article<b class="count" hidden>0</b></span></span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="publisher" title="Publisher">Publish</span></span></div></div><div class="now"></div></section><p class="legend">Green: working now. Striped blocks: checks done by code. Dashed: a human review.</p><h2>Who does what</h2><p>Two models share the work. The Research Assistant, a small model, searches and reads; the Principal Investigator, a larger one, writes and decides. They run side by side, so one mission's search goes on while another's article is written.</p><dl class="agents"><dt>Theorist<small>Principal Investigator</small></dt><dd>Looks across every mission and published article for patterns inside each tag and themes emerging between them, then sharpens the desk&#x27;s guiding questions. Now and then it proposes a new tag or one new mission.</dd><dt>Mission finder<small>both models</small></dt><dd>Searches around those guiding questions from a couple of unexpected angles and proposes up to three new missions, each resting on a page it actually found.</dd><dt>Source finder<small>Research Assistant</small></dt><dd>A small, fast model that does the digging: it searches, reads pages, checks the Wayback Machine for pages that changed or vanished, and gathers evidence for and against the mission&#x27;s thesis.</dd><dt>Brief writer<small>Principal Investigator</small></dt><dd>A larger model turns that evidence into a brief: a checkable thesis, facts that quote their sources, possibilities clearly marked as unverified, and the strongest case against.</dd><dt>Checks<small>code, no model</small></dt><dd>The source check fetches every cited page and confirms each quote is really on it; the article check confirms the article&#x27;s quotes and citations match the brief. A failure goes back for another try, and after three the mission is set aside for a human.</dd><dt>Reviews<small>a human</small></dt><dd>A person approves every brief or sends it back with notes, and reads every article before it is published.</dd><dt>Article writer<small>Principal Investigator</small></dt><dd>Writes the article from the approved brief, labeling each possibility “Possibility, not verified”.</dd><dt>Publisher<small>code, no model</small></dt><dd>Writes the article to this site, updates the feeds and passes it on to the other places it appears.</dd></dl><div class="lab-floor" aria-hidden="true"><div class="card" id="lab-left" data-lab="busy"></div><div class="card" id="lab-right" data-lab="busy"></div></div>
+</main></body></html>
