@@ -30,13 +30,14 @@ window.__researchers = true;
 
 // A page can set its own pace before loading this script (the published About page does: short visits, and
 // every visitor says hello): window.RESEARCHERS_PACE = {life: [lo, hi], gap: [lo, hi], first: [lo, hi],
-// entry: [lo, hi], greet: chance}.
+// entry: [lo, hi], greet: chance, rest: [lo, hi]}.
 const PACE = window.RESEARCHERS_PACE || {};
 const [LIFE_MIN, LIFE_MAX] = PACE.life || [15, 30];      // seconds on stage
 const [GAP_MIN, GAP_MAX] = PACE.gap || [10, 20];         // seconds between visitors on one stage
 const [FIRST_MIN, FIRST_MAX] = PACE.first || [2, 15];    // the first visitor's random wait, so stages never start in step
 const [ENTRY_MIN, ENTRY_MAX] = PACE.entry || [12, 20];   // seconds between any two arrivals on the page, so they stagger
 const GREET = PACE.greet ?? 0.22;                        // chance a card visitor says something on arrival
+const [REST_MIN, REST_MAX] = PACE.rest || [4, 6.5];      // seconds of standing about between bits (a crew's are longer)
 const MAX_ON_STAGE = 4;                      // researchers on the whole page at once: two lit steps, two busy cards
 const FAVOR = 0.8;                           // share of a working stage's visitors from its own worker's crew
 const EDGE = 40;                             // how far off-stage they start and finish their walk
@@ -1027,6 +1028,29 @@ const ACTIONS = {
       return stand(Object.assign(walkPose(r, s.dist), { carry: true }, r.caffeine > 0 ? { eyes: "wide" } : {}));
     },
   },
+  rest: {                                        // a breather between bits: stand about, now and then a step or two
+    init(r) {
+      const crew = r.mood === "crew";
+      const s = { dur: between(r.rand, crew ? REST_MIN + 1 : REST_MIN, crew ? REST_MAX + 3 : REST_MAX),
+                  turn: r.rand() < 0.35 ? between(r.rand, 1, 3) : -1, tap: r.rand() < 0.2 };
+      const span = r.stage.kind === "flow" ? r.stage.home : r.stage.range();   // on the strip, stay on the step
+      if (span && r.rand() < 0.45) {
+        const steps = r.rand() < 0.5 ? 1 : 2, dir = r.rand() < 0.5 ? -1 : 1;
+        s.tx = clamp(r.x + dir * steps * between(r.rand, 4, 5), span[0], span[1]);
+        s.at = between(r.rand, 0.6, s.dur * 0.6);
+      }
+      return s;
+    },
+    run(r, s, dt) {
+      if (s.tx != null && s.t > s.at && !s.stepped) {
+        if (stepToward(r, s, s.tx, dt, r.a.speed * 0.45)) s.stepped = true;
+        else return stand(Object.assign(walkPose(r, s.dist || 0), { carry: true }));
+      }
+      if (s.turn > 0 && s.t > s.turn) { r.face *= -1; s.turn = -1; }
+      if (s.t >= s.dur) s.done = true;
+      return stand({ carry: true, liftF: s.tap && Math.floor(s.t * 3) % 2 ? 1 : 0, eyes: s.t % 3.1 < 0.12 ? "closed" : "open" });
+    },
+  },
   idle: {
     init(r) { return { dur: between(r.rand, 1.2, 3.5), turn: r.rand() < 0.5 ? between(r.rand, 0.4, 1) : -1, tap: r.rand() < 0.4 }; },
     run(r, s) {
@@ -1791,14 +1815,14 @@ class Researcher {
     if (this.stage.kind === "crew" && this.stage.talking(this)) return;   // a crew takes turns to speak
     this.bubble = { text, t: 0, dur: dur || readTime(text), y: null, lines: null }; }
   quip(key) {                                    // a line for the bit, or one from the big library
-    if (this.rand() < 0.5) return;               // about every other bit goes by without a word
+    if (this.rand() < 0.65) return;              // most bits go by without a word
     const own = QUOTES[key];
     this.say(own && this.rand() < 0.4 ? pick(this.rand, own) : nextQuip());
   }
   icon(kind, dur = 1.2) { this.badge = { kind, t: 0, dur }; }
   line(key, chance = 0.6) {                      // a bit's own line, said over whatever bubble is up
     const lines = BIT_LINES[key];
-    if (lines && this.rand() < chance) this.say(pick(this.rand, lines));
+    if (lines && this.rand() < chance * 0.55) this.say(pick(this.rand, lines));   // even a bit's own line is said only now and then
   }
   begin(name, opts) {
     if (this.act && this.act.cleanup) this.act.cleanup();   // a bit cut short tidies away its bird, cat or dollar
@@ -1808,11 +1832,16 @@ class Researcher {
   }
   chooseNext() {
     if (this.next) { const [n, o] = this.next; this.next = null; return this.begin(n, o); }
-    const after = this.act.name;
-    if (after !== "walk" && after !== "stack" && this.rand() < (this.mood === "crew" ? 0.18 : 0.55)) return this.begin("walk");
+    if (this.act.name !== "rest") {              // every bit, walk or arrival is followed by a breather
+      if (this.act.name !== "spawn" && this.act.name !== "chase") this.lastBit = this.act.name;
+      return this.begin("rest");
+    }
+    const after = this.lastBit;
+    if (after !== "walk" && after !== "stack" && this.rand() < (this.mood === "crew" ? 0.12 : 0.3)) return this.begin("walk");
     const table = Object.assign({}, MOODS[this.mood] || MOODS.busy);
     for (const k in this.a.fav) if (k in table || this.mood !== "crew") table[k] = (table[k] || 0.5) * this.a.fav[k];
     delete table[after];
+    if (this.mood !== "crew") delete table.idle;   // the rest already was the idle bit (a crew may stand on)
     this.begin(weighted(this.rand, table));
   }
   settle() { this.tilt = 0; this.y = 0; this.squash = 1; this.badge = null; this.caffeine = 0; this.next = null; }
@@ -1841,8 +1870,8 @@ class Researcher {
     if (this.bubble && (this.bubble.t += dt) > this.bubble.dur) this.bubble = null;
     if (this.badge && (this.badge.t += dt) > this.badge.dur) this.badge = null;
     if ((this.quipIn -= dt) <= 0) {               // now and then, an unprompted remark
-      this.quipIn = this.mood === "crew" ? between(this.rand, 25, 60) : between(this.rand, 16, 32);
-      if (!this.bubble && !this.badge && !this.leaving && ["walk", "idle"].includes(this.act.name)) this.say(nextQuip());
+      this.quipIn = this.mood === "crew" ? between(this.rand, 35, 75) : between(this.rand, 28, 50);
+      if (!this.bubble && !this.badge && !this.leaving && ["rest", "idle"].includes(this.act.name)) this.say(nextQuip());
     }
     const act = this.act;
     act.t += dt;
@@ -1937,10 +1966,10 @@ class Stage {
     const [lo, hi] = this.range();
     return between(r, lo + 20, hi - 20);
   }
-  pickTarget(r, max = 220) {
+  pickTarget(r, max = 140) {
     const [lo, hi] = this.range();
     let x = between(r.rand, lo, hi);
-    if (Math.abs(x - r.x) < 24) x = r.x + (r.rand() < 0.5 ? -1 : 1) * between(r.rand, 36, 100);
+    if (Math.abs(x - r.x) < 24) x = r.x + (r.rand() < 0.5 ? -1 : 1) * between(r.rand, 30, 80);
     return clamp(clamp(x, r.x - max, r.x + max), lo, hi);   // a stroll, not a cross-country hike
   }
   hop() { return 0; }                              // cards are flat
@@ -1999,7 +2028,7 @@ class Stage {
   // effects; x is in pixels from the left, y in pixels up from the floor
   add(p) {
     if (this.fx.length >= 140) return null;
-    const q = Object.assign({ vx: 0, vy: 0, size: 2, max: p.life }, p);
+    const q = Object.assign({ vx: 0, vy: 0, size: 2, max: p.life, ground: this.ground }, p);   // the adder's floor
     this.fx.push(q);
     return q;                                    // so a bit can steer its bird, cat or rocket
   }
@@ -2014,7 +2043,7 @@ class Stage {
   sparkle(x, y, n) { for (let i = 0; i < n; i++) this.add({ kind: "star", x: x + (Math.random() - 0.5) * 36, y: y + (Math.random() - 0.5) * 20, vy: 12, life: 0.5 + Math.random() * 0.5, fade: true }); }
   paper(x, y, vx, vy) { this.add({ kind: "paper", x, y, vx, vy, g: 60, life: 2.6, sway: 8, floor: true, fade: true }); }
   book(x, y, vx, vy, c) { this.add({ kind: "book", c, x, y, vx, vy, g: 140, life: 2.2, floor: true, fade: true }); }
-  hole(x, n) { this.marks.push({ kind: "hole", x, n, life: 0.05 }); }
+  hole(x, n) { this.marks.push({ kind: "hole", x, n, life: 0.05, ground: this.ground }); }
 
   // ---------- drawing ----------
   draw() {
@@ -2025,7 +2054,7 @@ class Stage {
     ctx.setTransform(k, 0, 0, k, 0, 0);
     const G = this.ground;
     for (const m of this.marks) {
-      if (m.kind === "hole") { ctx.fillStyle = "rgba(60,40,25,.55)"; ctx.fillRect(Math.round(m.x - m.n), G - 1, m.n * 2 + 1, 3); }
+      if (m.kind === "hole") { ctx.fillStyle = "rgba(60,40,25,.55)"; ctx.fillRect(Math.round(m.x - m.n), (m.ground ?? G) - 1, m.n * 2 + 1, 3); }
     }
     const cast = this.cast();
     for (const r of cast) if (r.pose) this.drawResearcher(ctx, r);
@@ -2057,7 +2086,7 @@ class Stage {
     comp.clearRect(0, 0, OFF_W, OFF_H);
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) comp.drawImage(ink.canvas, dx, dy);
     comp.drawImage(off.canvas, 0, 0);
-    const x = Math.round(r.x), y = this.ground - Math.round(r.y);
+    const x = Math.round(r.x), y = r.stage.ground - Math.round(r.y);   // a flow slot has its own row's floor
     ctx.save();
     ctx.globalAlpha = clamp(r.alpha, 0, 1);
     ctx.translate(x, y + 1);
@@ -2068,7 +2097,7 @@ class Stage {
     if (r.tilt > 0.9) { r.headTop = 16; r.topY = 18; }
   }
   drawFx(ctx, p) {
-    const x = Math.round(p.x), y = this.ground - Math.round(p.y);
+    const x = Math.round(p.x), y = (p.ground ?? this.ground) - Math.round(p.y);
     ctx.globalAlpha = (p.fade ? clamp(p.life / p.max * 1.5, 0, 1) : 1) * (p.fadeIn ? clamp((p.max - p.life) / 0.6, 0, 1) : 1);
     switch (p.kind) {
       case "map": {
@@ -2098,7 +2127,7 @@ class Stage {
     ctx.globalAlpha = 1;
   }
   drawOverlay(ctx, r) {
-    const top = this.ground - r.topY;
+    const top = r.stage.ground - r.topY;
     if (r.badge) {
       const map = ICONS[r.badge.kind], bounce = Math.round(Math.abs(Math.sin(r.badge.t * 6)) * 3);
       const blink = r.badge.kind === "bulb" && Math.floor(r.badge.t * 8) % 2 && r.badge.t < 0.5;
@@ -2145,17 +2174,25 @@ class FlowStage extends Stage {
     const f = this.host.closest("#flow");
     try { return JSON.parse((f && f.dataset.working) || "[]"); } catch (e) { return []; }
   }
+  // The strip is a snake of lanes, so the tiles stand in rows: each row is its own floor, and a researcher stands
+  // on the row of its own step (slot.ground, slot.platforms), walking and hopping along that row only.
+  row(el) {
+    const top = el.offsetTop;
+    return [...this.host.querySelectorAll(".step, .check")].filter(n => Math.abs(n.offsetTop - top) < 4)
+      .map(n => [n.offsetLeft, n.offsetLeft + n.offsetWidth]).sort((a, b) => a[0] - b[0]);
+  }
   layout() {
     if (!this.host.isConnected || !this.host.clientWidth) return;
     const nodes = [...this.host.querySelectorAll(".step, .check")];
     if (!nodes.length) return;
-    this.platforms = nodes.map(n => [n.offsetLeft, n.offsetLeft + n.offsetWidth]);
+    this.platforms = this.row(nodes[0]);
     this.size(this.host.clientWidth, this.host.clientHeight, nodes[0].offsetTop - 1);
     for (const c of Object.values(this.crew || {})) this.aim(c.slot, c.step);
   }
   aim(slot, step) {                              // point a slot at a step: where to stand, what kind of work
     const el = step && this.host.querySelector(`.step[data-step="${step}"], .check[data-step="${step}"]`);
     slot.home = el ? this.span(el) : null;
+    if (el) { slot.ground = el.offsetTop - 1; slot.platforms = this.row(el); }
     slot.mood = step || "busy";
   }
   span(el) {                                     // where a researcher can stand on a step; a check is just a post

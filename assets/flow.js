@@ -1,6 +1,6 @@
 /* The pipeline strip, kept live. Every two seconds it asks /api/flow what is happening and relights the
  * strip in place: the steps working right now (one per busy worker), the counts waiting at each human review
- * and parked at each check, and the lines underneath. It relights the mission cards below the same way, one
+ * (none on the reviews auto mode does) and parked at each check, and the lines underneath. It relights the mission cards below the same way, one
  * per busy worker, so they never wait on the page's own refresh (which holds off while you type or chat).
  * It never reloads the page, so the pixel researchers on the strip keep walking. When a worker's step changes it fires a "flowchange" event on #flow saying which
  * worker and where its work went, which assets/researchers.js turns into that worker's researcher chasing
@@ -15,12 +15,12 @@ const EVERY = 2000;
 let root = null, timer = null, last = null, busy = false;
 
 // The strip never scrolls sideways: it shrinks (--s) to fit the panel, and when that would make its labels too
-// small to read it wraps between units instead (the .wrap class).
-const MIN_SCALE = 0.72, WRAP_SCALE = 0.9;
+// small to read it stacks instead (the .stack class): one column in flow order, each lane wrapping.
+const MIN_SCALE = 0.72, STACK_SCALE = 0.95;
 function fit() {
   const track = root && root.querySelector(".flow-track");
   if (!track) return;
-  root.classList.remove("wrap");
+  root.classList.remove("stack");
   track.style.setProperty("--s", "1");
   let s = 1;
   for (let i = 0; i < 4 && track.scrollWidth > track.clientWidth + 1; i++) {   // borders don't scale, so refine
@@ -29,8 +29,8 @@ function fit() {
     track.style.setProperty("--s", String(Math.floor(s * 1000) / 1000));
   }
   if (s < MIN_SCALE) {
-    root.classList.add("wrap");
-    track.style.setProperty("--s", String(WRAP_SCALE));
+    root.classList.add("stack");
+    track.style.setProperty("--s", String(STACK_SCALE));
   }
 }
 let observer = null;
@@ -47,7 +47,7 @@ function attach() {
     }
     fit();
     last = { working: byWorker(JSON.parse(el.dataset.working || "[]")), waiting: {} };
-    el.querySelectorAll(".human[data-step]").forEach(h => {
+    el.querySelectorAll(".human[data-step]:not(.auto)").forEach(h => {
       last.waiting[h.dataset.step] = Number(h.querySelector(".count").textContent) || 0;
     });
   }
@@ -84,7 +84,7 @@ function apply(d) {
     if (w) { e.setAttribute("aria-current", "step"); e.dataset.worker = w; }
     else { e.removeAttribute("aria-current"); delete e.dataset.worker; }
   });
-  root.querySelectorAll(".human[data-step]").forEach(h => {
+  root.querySelectorAll(".human[data-step]:not(.auto)").forEach(h => {   // auto mode's steps wait on nobody
     const key = h.dataset.step, n = d.waiting[key] || 0, count = h.querySelector(".count");
     count.textContent = n; count.hidden = !n;
     h.classList.toggle("waiting", n > 0);

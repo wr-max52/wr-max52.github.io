@@ -1,59 +1,79 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>About · Mission Loop</title><style>/* the pipeline strip: agents on the track, checks as vertical blocks, human reviews as sidesteps below.
-   It never scrolls: assets/flow.js sets --s to shrink it to the panel's width, and below a readable size it
-   wraps between units (an agent with its check and review), each line starting with the arrow it continues. */
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>About · Mission Loop</title><style>.ico { display:inline-flex; flex:none; width:1.05em; height:1.05em; }
+.ico svg { width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round;
+           stroke-linejoin:round; }
+/* the pipeline strip: a snake. Each lane runs between two human reviews, the reviews are square ends at the lanes'
+   ends, and the lanes turn at each one: left to right, then right to left one level lower, and so on (ui.flow_strip).
+   Agents are tiles with an icon, each code check a narrow tile right after the agent it checks. It never scrolls:
+   assets/flow.js sets --s to shrink it to the panel's width, and below a readable size it stacks (.stack): one
+   column in flow order, lanes wrapping, every arrow pointing on. */
 .flow { flex-basis:100%; min-width:0; margin-top:.3rem; --line:color-mix(in srgb, var(--muted) 60%, transparent); }
 .flow-scroll { overflow:hidden; padding-bottom:.25rem; }
-.flow-track { --s:1; --u:calc(1rem * var(--s)); --row:calc(var(--u) * 1.6); --drop:var(--u); --hh:calc(var(--u) * 1.45);
-              --ch:calc(var(--row) + var(--u) * 1.1);
-              display:flex; align-items:flex-start; width:100%; position:relative; }
-.flow-track[data-lab] { padding-top:5rem; }          /* headroom for the researchers and their speech bubbles */
+.flow-track { --s:1; --u:calc(1rem * var(--s)); --tile:calc(var(--u) * 3.1); --cap:calc(var(--u) * 7.6);
+              display:grid; grid-template-columns:var(--cap) minmax(min-content, 1fr) var(--cap);
+              row-gap:calc(var(--u) * 1.3); width:100%; position:relative; }
+.flow-track[data-lab] { padding-top:5rem; row-gap:max(3.4rem, calc(var(--u) * 1.3)); }   /* room for the researchers */
+.flow .lane { display:flex; align-items:center; min-width:0; }
+.flow .lane.rtl { flex-direction:row-reverse; }
 .flow .unit { display:contents; }
-.flow.wrap .flow-track { flex-wrap:wrap; row-gap:calc(var(--u) * .7); }
-.flow.wrap .unit { display:flex; align-items:flex-start; flex:none; }
-.flow.wrap .join:not(.short) { flex:none; width:calc(var(--u) * 1.5); }
-.flow .step { flex:none; height:var(--row); line-height:calc(var(--row) - 2px); padding:0 calc(var(--u) * .65);
-              border-radius:999px; border:1px solid var(--rule); background:var(--quote); color:var(--muted);
-              font-size:calc(var(--u) * .78); font-weight:600; white-space:nowrap; }
+.flow .step { flex:none; display:flex; align-items:center; gap:calc(var(--u) * .55); box-sizing:border-box;
+              height:var(--tile); min-width:calc(var(--u) * 8.4); padding:0 calc(var(--u) * .8);
+              border-radius:calc(var(--u) * .55); border:1px solid var(--rule); background:var(--quote); color:var(--muted); }
+.flow .step .ico { width:calc(var(--u) * 1.35); height:calc(var(--u) * 1.35); }
+.flow .step .name { display:block; font-size:calc(var(--u) * .86); font-weight:700; line-height:1.15; white-space:nowrap; }
+.flow .step .sub { display:block; font-size:calc(var(--u) * .68); line-height:1.2; white-space:nowrap; opacity:.85; }
 .flow .step.on { background:#237a35; border-color:#237a35; color:#fff; animation:working 2s ease-out infinite; }
-.flow .join { flex:1 0 var(--u); max-width:calc(var(--u) * 3.5); height:var(--row); position:relative; }   /* stretch to fill */
+.flow .join { flex:1 0 calc(var(--u) * 1.6); height:var(--tile); position:relative; }   /* stretch to fill the lane */
 .flow .join::before { content:""; position:absolute; left:2px; right:4px; top:calc(50% - 1px); border-top:2px solid var(--line); }
 .flow .join::after { content:""; position:absolute; right:1px; top:calc(50% - 4px);
                      border:4px solid transparent; border-right:0; border-left:5px solid var(--line); }
-.flow .join.short { flex:none; width:calc(var(--u) * .5); } .flow .join.short::after { display:none; }
-.flow .join.short::before { right:1px; }
-.flow .check { flex:none; position:relative; width:var(--u); height:var(--ch); border-radius:4px; overflow:visible;
-               border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+.flow .lane.rtl .join::before { left:4px; right:2px; }
+.flow .lane.rtl .join::after { right:auto; left:1px; border-left:0; border-right:5px solid var(--line); }
+.flow .join.short { flex:none; width:calc(var(--u) * .6); }
+.flow .join.short::after { display:none; }
+.flow .join.short::before, .flow .lane.rtl .join.short::before { left:1px; right:1px; }
+.flow .check { flex:none; position:relative; box-sizing:border-box; width:calc(var(--u) * 2.5); height:var(--tile);
+               border-radius:calc(var(--u) * .4); border:1px solid var(--line); color:var(--muted);
+               display:flex; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--u) * .15);
                background:repeating-linear-gradient(-45deg, var(--quote) 0 4px, var(--bg) 4px 8px); }
-.flow .check .label { writing-mode:vertical-rl; transform:rotate(180deg); font-size:calc(var(--u) * .56); font-weight:700;
-                      letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-.flow .check.on { background:#237a35; border-color:#237a35; animation:working 2s ease-out infinite; }
-.flow .check.on .label { color:#fff; }
+.flow .check .ico { width:calc(var(--u) * 1.1); height:calc(var(--u) * 1.1); }
+.flow .check .label { font-size:calc(var(--u) * .54); font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.flow .check.on { background:#237a35; border-color:#237a35; color:#fff; animation:working 2s ease-out infinite; }
 .flow .check.on::after { content:""; position:absolute; left:1px; right:1px; height:3px; border-radius:2px;
                          background:#b2f2bb; animation:scan 1.1s ease-in-out infinite alternate; }
-.flow .parked-count { position:absolute; right:calc(100% + 3px); bottom:-1px; min-width:var(--u); height:var(--u);
-                      border-radius:999px; background:#c92a2a; color:#fff; font-size:calc(var(--u) * .62);
+.flow .parked-count { position:absolute; top:calc(var(--u) * -.5); right:calc(var(--u) * -.5); min-width:var(--u);
+                      height:var(--u); border-radius:999px; background:#c92a2a; color:#fff; font-size:calc(var(--u) * .62);
                       line-height:var(--u); text-align:center; padding:0 calc(var(--u) * .2); }
-.flow .detour { flex:none; position:relative; padding:calc(var(--row) + var(--drop)) calc(var(--u) * .9) 0; }
-.flow .detour::before { content:""; position:absolute; left:calc(var(--u) * -.5); width:calc(var(--u) * 1.4 - 3px); top:var(--ch);
-                        height:calc(var(--row) + var(--drop) + var(--hh) / 2 - var(--ch));
-                        border-left:2px solid var(--line); border-bottom:2px solid var(--line);
-                        border-bottom-left-radius:7px; }
-.flow .detour::after { content:""; position:absolute; right:0; width:calc(var(--u) * .9); top:calc(var(--row) / 2 - 1px);
-                       height:calc(var(--row) / 2 + var(--drop) + var(--hh) / 2);
-                       border-right:2px solid var(--line); border-bottom:2px solid var(--line);
-                       border-bottom-right-radius:7px; }
-.flow .human { position:relative; display:inline-flex; align-items:center; gap:calc(var(--u) * .3); height:var(--hh);
-               padding:0 calc(var(--u) * .55); border-radius:999px; border:1px dashed var(--line); background:var(--bg);
-               color:var(--muted); font-size:calc(var(--u) * .74); font-weight:600; white-space:nowrap; text-decoration:none; }
-.flow .human::before { content:""; position:absolute; left:-6px; top:calc(50% - 4px);
-                       border:4px solid transparent; border-right:0; border-left:5px solid var(--line); }
-.flow .human svg { width:calc(var(--u) * .85); height:calc(var(--u) * .85); fill:none; stroke:currentColor; stroke-width:2.2;
-                   stroke-linecap:round; stroke-linejoin:round; }
+/* a human review: the square end of a lane, where the snake turns. In auto mode the two it takes over are green. */
+.flow .human { position:relative; align-self:stretch; box-sizing:border-box; min-height:var(--tile);
+               display:flex; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--u) * .3);
+               padding:calc(var(--u) * .5); border-radius:calc(var(--u) * .55); border:2px dashed var(--line);
+               background:var(--bg); color:var(--muted); text-align:center; text-decoration:none; }
+.flow .human .ico { width:calc(var(--u) * 1.7); height:calc(var(--u) * 1.7); }
+.flow .human .name { display:block; font-size:calc(var(--u) * .86); font-weight:700; line-height:1.15; }
+.flow .human .sub { display:block; font-size:calc(var(--u) * .68); line-height:1.2; }
 .flow .human.waiting { border-style:solid; border-color:var(--tone); background:var(--tint); color:var(--fg); }
-.flow .human .count { background:var(--tone); color:#fff; border-radius:999px; font-size:calc(var(--u) * .68);
-                      line-height:calc(var(--u) * 1.05); padding:0 calc(var(--u) * .38); }
+.flow .human .count { position:absolute; top:calc(var(--u) * .4); right:calc(var(--u) * .4); background:var(--tone);
+                      color:#fff; border-radius:999px; font-size:calc(var(--u) * .7); line-height:calc(var(--u) * 1.15);
+                      min-width:calc(var(--u) * 1.15); padding:0 calc(var(--u) * .3); box-sizing:border-box; }
 .flow .human.arrived { animation:arrived 1s ease-out 3; }
+.flow .human.auto { border-style:solid; border-color:#237a35; color:var(--fg);
+                    background:color-mix(in srgb, #237a35 12%, var(--bg)); }
+.flow .human.auto .ico { color:#237a35; }
+.flow .human.auto .ico svg { fill:currentColor; stroke:none; }
+.flow.stack .flow-track { display:flex; flex-direction:column; align-items:stretch; }
+.flow.stack .lane, .flow.stack .lane.rtl { flex-direction:row; flex-wrap:wrap; row-gap:calc(var(--u) * .6); }
+.flow.stack .unit { display:flex; align-items:center; flex:none; }
+.flow.stack .step { min-width:0; }
+.flow.stack .flow-track[data-lab] .lane { row-gap:3.4rem; }
+.flow.stack .join { flex:none; width:calc(var(--u) * 1.4); }
+.flow.stack .join.short { width:calc(var(--u) * .6); }
+.flow.stack .join.edge { display:none; }
+.flow.stack .lane.rtl .join::before { left:2px; right:4px; }
+.flow.stack .lane.rtl .join::after { left:auto; right:1px; border-right:0; border-left:5px solid var(--line); }
+.flow.stack .human { flex-direction:row; justify-content:flex-start; text-align:left; padding:calc(var(--u) * .5) calc(var(--u) * .8); }
+.flow.stack .human .count { position:static; margin-left:auto; }
+.flow .text { display:block; }
 .flow [hidden] { display:none; }
 .flow.off .step, .flow.off .check { opacity:.7; }
 .flow .now { margin-top:.45rem; }
@@ -63,6 +83,7 @@
   .flow .step.on, .flow .check.on, .flow .check.on::after, .flow .human.arrived { animation:none; }
 }
 .flow .human.review { --tone:#1f6feb; --tint:rgba(31,111,235,.12); }
+.flow .human.propose { --tone:#7048e8; --tint:rgba(112,72,232,.12); }
 .flow .human.publish { --tone:#237a35; --tint:rgba(47,158,68,.14); }
 @keyframes working { from { box-shadow:0 0 0 0 rgba(47,158,68,.6); } to { box-shadow:0 0 0 .45rem rgba(47,158,68,0); } }
 canvas.lab-stage { position:absolute; left:0; pointer-events:none; image-rendering:pixelated; width:100%; }
@@ -166,5 +187,5 @@ html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
 html[data-theme="dark"] .theme-toggle .sun { display:block; }
 </style></head>
 <body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/" aria-current="page">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
-<h1>About</h1><p>Mission Loop is a small research desk run by AI agents, with a human editor. Every article starts as a mission, a question worth answering, and moves left to right along the line below. Code checks the agents' work at each step, and nothing is published until a person has approved the research and read the article.</p><section id="flow" class="flow" data-demo data-working="[]" aria-label="The pipeline, playing an example run"><div class="flow-scroll"><div class="flow-track"><span class="unit"><span class="step" data-step="theorist" title="Theorist">Theorist</span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="finder" title="Mission finder">Finder</span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="sources" title="Source finder">Sources</span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="brief" title="Brief writer">Brief</span><span class="join short" aria-hidden="true"></span><span class="check" data-step="source_check" title="Source checker: code, no model. A failure goes back for another try; after 3 tries the mission is parked for you"><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span><span class="detour"><span class="human review" data-step="brief_review" title="Brief review: you approve the brief or send it back"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>Review brief<b class="count" hidden>0</b></span></span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="writer" title="Article writer">Article</span><span class="join short" aria-hidden="true"></span><span class="check" data-step="article_check" title="Article checker: code, no model. A failure goes back for another try; after 3 tries the mission is parked for you"><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span><span class="detour"><span class="human publish" data-step="article_review" title="Article review: you publish the article or send it back"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>Review article<b class="count" hidden>0</b></span></span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="publisher" title="Publisher">Publish</span></span></div></div><div class="now"></div></section><p class="legend">Green: working now. Striped blocks: checks done by code. Dashed: a human review.</p><h2>Who does what</h2><p>Two models share the work. The Research Assistant, a small model, searches and reads; the Principal Investigator, a larger one, writes and decides. They run side by side, so one mission's search goes on while another's article is written.</p><dl class="agents"><dt>Theorist<small>Principal Investigator</small></dt><dd>Looks across every mission and published article for patterns inside each tag and themes emerging between them, then sharpens the desk&#x27;s guiding questions. Now and then it proposes a new tag or one new mission.</dd><dt>Mission finder<small>both models</small></dt><dd>Searches around those guiding questions from a couple of unexpected angles and proposes up to three new missions, each resting on a page it actually found.</dd><dt>Source finder<small>Research Assistant</small></dt><dd>A small, fast model that does the digging: it searches, reads pages, checks the Wayback Machine for pages that changed or vanished, and gathers evidence for and against the mission&#x27;s thesis.</dd><dt>Brief writer<small>Principal Investigator</small></dt><dd>A larger model turns that evidence into a brief: a checkable thesis, facts that quote their sources, possibilities clearly marked as unverified, and the strongest case against.</dd><dt>Checks<small>code, no model</small></dt><dd>The source check fetches every cited page and confirms each quote is really on it; the article check confirms the article&#x27;s quotes and citations match the brief. A failure goes back for another try, and after three the mission is set aside for a human.</dd><dt>Reviews<small>a human</small></dt><dd>A person approves every brief or sends it back with notes, and reads every article before it is published.</dd><dt>Article writer<small>Principal Investigator</small></dt><dd>Writes the article from the approved brief, labeling each possibility “Possibility, not verified”.</dd><dt>Publisher<small>code, no model</small></dt><dd>Writes the article to this site, updates the feeds and passes it on to the other places it appears.</dd></dl><div class="lab-floor" aria-hidden="true"><div class="card" id="lab-left" data-lab="busy"></div><div class="card" id="lab-right" data-lab="busy"></div></div>
+<h1>About</h1><p>Mission Loop is a small research desk run by AI agents, with a human editor. Every article starts as a mission, a question worth answering, and moves along the line below, turning at each review. Code checks the agents' work at each step, and nothing is published until a person has approved the research and read the article.</p><section id="flow" class="flow" data-demo data-working="[]" aria-label="The pipeline, playing an example run"><div class="flow-scroll"><div class="flow-track"><span class="lane" style="grid-row:1; grid-column:1 / 3"><span class="unit"><span class="step" data-step="theorist" title="Theorist"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span><span class="text"><span class="name">Theorist</span><span class="sub">evolves the line</span></span></span><span class="join short" aria-hidden="true"></span><span class="check" data-step="theorist_check" title="Theorist check: code, no model. The line must still ask questions and keep at least half its words, a new epic needs 2+ missions and a new name, and the new mission must be new to the desk. Whatever fails is dropped; nothing is parked."><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="finder" title="Mission finder"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></span><span class="text"><span class="name">Finder</span><span class="sub">finds missions</span></span></span><span class="join short" aria-hidden="true"></span><span class="check" data-step="finder_check" title="Finder check: code, no model. It keeps at most 3 missions, each resting on a page the searches found and unlike any topic the desk has, and a new epic only when 2+ of them share it. Whatever fails is dropped; nothing is parked."><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span></span><span class="join edge" aria-hidden="true"></span></span><span class="human propose" data-step="epic_review" title="Epic review: you approve, rename, move or reject the epics the Theorist and the finder propose" style="grid-row:1 / span 2; grid-column:3"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span><span class="text"><span class="name">Review epics</span><span class="sub">you approve</span></span><b class="count" hidden>0</b></span><span class="lane rtl" style="grid-row:2; grid-column:2 / 3"><span class="unit"><span class="join edge" aria-hidden="true"></span><span class="step" data-step="sources" title="Source finder"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 2h13v-4"/></svg></span><span class="text"><span class="name">Sources</span><span class="sub">searches and reads</span></span></span></span><span class="unit"><span class="join" aria-hidden="true"></span><span class="step" data-step="brief" title="Brief writer"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg></span><span class="text"><span class="name">Brief</span><span class="sub">writes the brief</span></span></span><span class="join short" aria-hidden="true"></span><span class="check" data-step="source_check" title="Source check: code, no model. Every claim cited, its quotes found on the page, 3 supporting websites, at least one fact and a counterpoint. A failure is another try; after 3 tries the mission is parked for you."><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span></span><span class="join edge" aria-hidden="true"></span></span><span class="human review" data-step="brief_review" title="Brief review: you approve the brief or send it back" style="grid-row:2 / span 2; grid-column:1"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span><span class="text"><span class="name">Review brief</span><span class="sub">you approve</span></span><b class="count" hidden>0</b></span><span class="lane" style="grid-row:3; grid-column:2 / 3"><span class="unit"><span class="join edge" aria-hidden="true"></span><span class="step" data-step="writer" title="Article writer"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M7 9h7M7 13h7M7 16h4"/></svg></span><span class="text"><span class="name">Article</span><span class="sub">writes the article</span></span></span><span class="join short" aria-hidden="true"></span><span class="check" data-step="article_check" title="Article check: code, no model. Every paragraph cited to a checked source in the approved brief, quotes copied from those sources, no outside links, the opposing view cited. A failure is another try; after 3 tries the mission is parked for you."><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></span><span class="label">check</span><b class="parked-count" title="0 parked here" hidden>0</b></span></span><span class="join edge" aria-hidden="true"></span></span><span class="human publish" data-step="article_review" title="Article review: you publish the article or send it back" style="grid-row:3 / span 2; grid-column:3"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span><span class="text"><span class="name">Review article</span><span class="sub">you publish</span></span><b class="count" hidden>0</b></span><span class="lane rtl" style="grid-row:4; grid-column:1 / 3"><span class="unit"><span class="join edge" aria-hidden="true"></span><span class="step" data-step="publisher" title="Publisher"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></span><span class="text"><span class="name">Publish</span><span class="sub">site and channels</span></span></span></span></span></div></div><div class="now"></div></section><p class="legend">Green: working now. Striped blocks: checks done by code. Dashed: a human review.</p><h2>Who does what</h2><p>Two models share the work. The Research Assistant, a small model, searches and reads; the Principal Investigator, a larger one, writes and decides. They run side by side, so one mission's search goes on while another's article is written.</p><dl class="agents"><dt>Theorist<small>Principal Investigator</small></dt><dd>Looks across every mission and published article for patterns inside each tag and themes emerging between them, then sharpens the desk&#x27;s guiding questions. Now and then it proposes a new tag or one new mission.</dd><dt>Mission finder<small>both models</small></dt><dd>Searches around those guiding questions from a couple of unexpected angles and proposes up to three new missions, each resting on a page it actually found.</dd><dt>Source finder<small>Research Assistant</small></dt><dd>A small, fast model that does the digging: it searches, reads pages, checks the Wayback Machine for pages that changed or vanished, and gathers evidence for and against the mission&#x27;s thesis.</dd><dt>Brief writer<small>Principal Investigator</small></dt><dd>A larger model turns that evidence into a brief: a checkable thesis, facts that quote their sources, possibilities clearly marked as unverified, and the strongest case against.</dd><dt>Checks<small>code, no model</small></dt><dd>The source check fetches every cited page and confirms each quote is really on it; the article check confirms the article&#x27;s quotes and citations match the brief. A failure goes back for another try, and after three the mission is set aside for a human.</dd><dt>Reviews<small>a human</small></dt><dd>A person approves every brief or sends it back with notes, and reads every article before it is published.</dd><dt>Article writer<small>Principal Investigator</small></dt><dd>Writes the article from the approved brief, labeling each possibility “Possibility, not verified”.</dd><dt>Publisher<small>code, no model</small></dt><dd>Writes the article to this site, updates the feeds and passes it on to the other places it appears.</dd></dl><div class="lab-floor" aria-hidden="true"><div class="card" id="lab-left" data-lab="busy"></div><div class="card" id="lab-right" data-lab="busy"></div></div>
 </main></body></html>
