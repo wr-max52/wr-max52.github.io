@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Did Jazz&#x27;s Credit Shift to White Musicians Through Three Quiet Mechanisms, Not One Grand Theft?</title><script>
+(function () {
+  try {
+    var theme = localStorage.getItem("theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+  window.toggleTheme = function () {
+    try {
+      var theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    } catch (e) {}
+  };
+})();
+</script><style>
+:root { --bg:#fbfaf7; --fg:#1d1d1f; --muted:#6b6b70; --rule:#e3e1dc; --accent:#8a2b2b; --quote:#f1efe9; }
+:root[data-theme="dark"] { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                           --accent:#e08a8a; --quote:#1f1f23; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                            --accent:#e08a8a; --quote:#1f1f23; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font: 18px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; }
+main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+a { color: var(--accent); }
+header.site { font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; letter-spacing: .08em;
+              text-transform: uppercase; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+              flex-wrap: wrap; }
+header.site a { color: var(--muted); text-decoration: none; }
+header.site a:hover, header.site a[aria-current] { color: var(--fg); }
+header.site .brand { margin-right: auto; }
+.back { display: inline-block; font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; color: var(--muted);
+        text-decoration: none; margin-bottom: 1.2rem; }
+.back:hover { color: var(--fg); }
+nav.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem;
+            font: 0.9rem/1.4 -apple-system, system-ui, sans-serif; }
+nav.pager a { text-decoration: none; max-width: 48%; }
+nav.pager .older { margin-left: auto; text-align: right; }
+nav.pager small { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+nav.tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
+nav.tags a { font: 600 0.8rem/1.3 -apple-system, system-ui, sans-serif; padding: .25rem .7rem; border-radius: 999px;
+             border: 1px solid var(--rule); color: var(--muted); text-decoration: none; }
+nav.tags a:hover { border-color: var(--muted); color: var(--fg); }
+nav.tags a.on { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+nav.tags span { opacity: .65; font-weight: 400; margin-left: .2rem; }
+a.epic { text-decoration: none; }
+a.epic:hover { border-color: var(--muted); color: var(--fg); }
+h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; }
+h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+.dek { font-size: 1.2rem; color: var(--muted); margin: 0 0 .75rem; }
+.meta { font: 0.85rem/1.4 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+sup a { text-decoration: none; font: 600 0.7rem -apple-system, system-ui, sans-serif; }
+ol.sources { padding-left: 1.4rem; font-size: 0.95rem; }
+ul.connected { padding-left: 1.2rem; } ul.connected li { margin-bottom: .5rem; }
+ul.connected .why { color: var(--muted); font-size: .9rem; }
+ol.sources li { margin-bottom: 1rem; }
+ol.sources blockquote { margin: .35rem 0 0; padding: .5rem .75rem; background: var(--quote);
+                        border-left: 3px solid var(--rule); }
+aside.claim { margin: 0 0 1.75rem; padding: .9rem 1.1rem; background: var(--quote);
+              border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; }
+aside.claim p { margin: .3rem 0 0; font-size: 1.15rem; line-height: 1.5; }
+aside.claim > .stance { color: var(--accent); }
+.stance { font: 600 0.7rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
+          letter-spacing: .06em; color: var(--muted); }
+.note { font: 0.85rem/1.5 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-top: 1px solid var(--rule); margin-top: 2.5rem; padding-top: 1rem; }
+ul.index { list-style: none; padding: 0; }
+ul.index li { border-bottom: 1px solid var(--rule); padding: 1.1rem 0; }
+ul.index a.title { font-size: 1.25rem; font-weight: 600; text-decoration: none; color: var(--fg); }
+ul.index p { margin: .3rem 0 0; color: var(--muted); }
+.epic { display:inline-block; font: 600 0.72rem/1.3 -apple-system, system-ui, sans-serif; white-space:nowrap;
+        padding: .12rem .5rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted);
+        vertical-align: middle; }
+.epic.proposed { border-style: dashed; }
+.theme-toggle { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .55rem;
+               border:1px solid var(--rule); border-radius:999px; background:var(--bg); color:var(--fg);
+               font:600 0.8rem/1 -apple-system, system-ui, sans-serif; cursor:pointer; }
+.theme-toggle:hover { border-color:var(--muted); }
+.theme-toggle svg { width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:2;
+                    stroke-linecap:round; stroke-linejoin:round; display:none; }
+html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
+html[data-theme="dark"] .theme-toggle .sun { display:block; }
+</style></head>
+<body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
+<a class="back" href="../">&larr; All articles</a><article><h1>Did Jazz&#x27;s Credit Shift to White Musicians Through Three Quiet Mechanisms, Not One Grand Theft?</h1>
+<p class="dek">It is possible that record-company gatekeeping, a non-founder&#x27;s boast, and purchased arranger charts converged between 1916 and 1936 to move jazz&#x27;s public authorship toward white names—a claim the sources suggest but cannot yet prove.</p>
+<p class="meta">Published November 22, 2026 · 11 sources</p>
+<h2>Three Mechanisms, One Shift</h2>
+<p><span class="stance">Possibility, not verified</span> It is possible that the credit for jazz's invention shifted to white musicians between 1916 and 1936 not through a single act of theft but through three converging mechanisms: record companies' refusal to sign Black bands until roughly 1920, Nick LaRocca's explicit claims of sole invention beginning in the 1930s, and white bandleaders such as Paul Whiteman and Benny Goodman purchasing Black arrangers' charts while receiving public billing as the music's leaders <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup><sup><a href="#src-5">[5]</a></sup><sup><a href="#src-6">[6]</a></sup><sup><a href="#src-7">[7]</a></sup>. The Smithsonian reports that "Record companies routinely ignored African-American musicians—with only a few exceptions, such as singer Bert Williams and bandleader James Reese Europe" <sup><a href="#src-1">[1]</a></sup>, and that LaRocca "would incense many by making racist remarks and preposterously claiming that he invented jazz" <sup><a href="#src-2">[2]</a></sup>. Wikipedia records that detractors say Whiteman's music "co-opted the innovations of black musicians" <sup><a href="#src-3">[3]</a></sup>, while Henderson's wife Leora said Goodman "bought Henderson's arrangements" <sup><a href="#src-4">[4]</a></sup>.</p>
+<h2>The &#x27;First&#x27; Recording Was a Refusal, Not a Priority</h2>
+<p>The National Park Service reports that "In 1916 the Victor Talking Machine Company offered Keppard and the Creole Orchestra an opportunity to record, but he refused" <sup><a href="#src-8">[8]</a></sup>. Smithsonian Magazine reports that "Record companies routinely ignored African-American musicians—with only a few exceptions, such as singer Bert Williams and bandleader James Reese Europe," and identifies the ODJB's 1917 recording as likely the first jazz recording ever issued <sup><a href="#src-1">[1]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that this designation is contingent on a single musician's refusal rather than musical priority: Keppard turned down Victor in 1916, and Mamie Smith's 1920 "Crazy Blues" sold 75,000 copies to a majority-black audience in its first month, showing a Black commercial market existed but had not yet been courted by major labels <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-8">[8]</a></sup><sup><a href="#src-5">[5]</a></sup>.</p>
+<h2>The Boaster and the Buyers</h2>
+<p>Wikipedia records that in 1916 LaRocca "was chosen as a last-minute replacement for Frank Christian in Johnny Stein's band to play a job up in Chicago, Illinois" <sup><a href="#src-6">[6]</a></sup>. Smithsonian Magazine reports that "in later years, leader LaRocca would incense many by making racist remarks and preposterously claiming that he invented jazz" <sup><a href="#src-2">[2]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that LaRocca's repeated public claims of sole invention in the 1930s through the 1950s did more to entrench a white-origin narrative than any single recording, because he was not a founder of the New Orleans jazz tradition but a last-minute replacement, meaning the white-invention story was sustained by a non-founder's self-promotion rather than by a documented historical sequence <sup><a href="#src-2">[2]</a></sup><sup><a href="#src-6">[6]</a></sup>.</p>
+<p>Wikipedia's Fletcher Henderson article reports that Henderson's wife Leora said "John Hammond and Goodman bought Henderson's arrangements to support him, that Goodman always gave Henderson credit for the arrangements and said that he played them better than his own" <sup><a href="#src-4">[4]</a></sup>. Wikipedia also notes that detractors suggest Whiteman's music "co-opted the innovations of black musicians" <sup><a href="#src-3">[3]</a></sup>, and that Whiteman "was classically trained but liked jazz, associating it closely with the Original Dixieland Jazz Band and other white purveyors of the music" <sup><a href="#src-7">[7]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that Paul Whiteman and Benny Goodman received public billing as jazz's leaders while their musical content was substantially authored by Black arrangers, based on these reports, leaving open whether Goodman's credit practice was typical or an exception, since no contemporary billing or royalty records were found in these sources <sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup><sup><a href="#src-7">[7]</a></sup>.</p>
+<h2>The Structural Break and the Packaging Event</h2>
+<p>Dave Lippman's essay reports that "French Creole musicians downtown had been playing in marching and dance bands; but in 1894, creoles were expelled from polite White society under new segregation laws" <sup><a href="#src-9">[9]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that this expulsion created a structural break making Black and Creole origins less visible to later white audiences, though Lippman's piece is an advocacy essay and no primary legal record in the sources consulted corroborates the claim <sup><a href="#src-9">[9]</a></sup>.</p>
+<p>The National Park Service describes the ODJB as an "instant hit" that drew interest from Victor and Columbia, "who were eager to exploit the new 'jazz craze'" <sup><a href="#src-10">[10]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that the NPS's framing—treating the white band's breakthrough as the culmination of a musical revolution begun in the 1890s by Buddy Bolden—implicitly concedes that the event was packaging rather than invention, and that the "jazz craze" was a market phenomenon attaching white names to a tradition already in circulation <sup><a href="#src-10">[10]</a></sup>.</p>
+<h2>The Case Against Erasure</h2>
+<p>The same Smithsonian article that documents label gatekeeping also reports that "in New Orleans, where there was little racial segregation, blacks and whites lived cheek-by-jowl, everyone's windows were open and sounds floated from house to house, which meant music was easily shared" <sup><a href="#src-11">[11]</a></sup>. If the music was genuinely co-created across racial lines in a low-segregation environment, the shift of credit to white bands may reflect commercial packaging and individual boasting rather than a structural erasure of Black authorship <sup><a href="#src-11">[11]</a></sup>. No source in the brief documents a coordinated effort to suppress Black names; the evidence assembled here shows uneven visibility, not a single act of theft <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-10">[10]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup><sup><a href="#src-7">[7]</a></sup>. A skeptic would argue that white musicians were inside the tradition, not outside it, and that the gatekeeping described by the Smithsonian and the National Park Service is a market failure rather than a conspiracy <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-10">[10]</a></sup>.</p>
+<h2>Sources</h2><ol class="sources">
+<li id="src-1" value="1"><span class="stance">supports</span><br><a href="https://www.smithsonianmag.com/smithsonian-institution/was-first-jazz-recording-made-group-white-guys-180962246/">The First Jazz Recording Was Made by a Group of White Guys? — Smithsonian Magazine</a><blockquote>Record companies routinely ignored African-American musicians—with only a few exceptions, such as singer Bert Williams and bandleader James Reese Europe.</blockquote></li>
+<li id="src-2" value="2"><span class="stance">supports</span><br><a href="https://www.smithsonianmag.com/smithsonian-institution/was-first-jazz-recording-made-group-white-guys-180962246/">The First Jazz Recording Was Made by a Group of White Guys? — Smithsonian Magazine (LaRocca claims)</a><blockquote>And in later years, leader LaRocca would incense many by making racist remarks and preposterously claiming that he invented jazz.</blockquote></li>
+<li id="src-3" value="3"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Paul_Whiteman">Paul Whiteman — Wikipedia</a><blockquote>Detractors suggest that his ornately orchestrated music was jazz in name only, lacking the genre&#x27;s improvisational and emotional depth, and co-opted the innovations of black musicians.</blockquote></li>
+<li id="src-4" value="4"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Fletcher_Henderson">Fletcher Henderson — Wikipedia</a><blockquote>She said that John Hammond and Goodman bought Henderson&#x27;s arrangements to support him, that Goodman always gave Henderson credit for the arrangements and said that he played them better than his own.</blockquote></li>
+<li id="src-5" value="5"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Race_record">Race record — Wikipedia</a><blockquote>In 1920, Smith created her &quot;Crazy Blues&quot;/&quot;It&#x27;s Right Here for You&quot; recording, which sold 75,000 copies to a majority-black audience in the first month.</blockquote></li>
+<li id="src-6" value="6"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Nick_LaRocca">Nick LaRocca — Wikipedia</a><blockquote>In 1916 he was chosen as a last-minute replacement for Frank Christian in Johnny Stein&#x27;s band to play a job up in Chicago, Illinois.</blockquote></li>
+<li id="src-7" value="7"><span class="stance">supports</span><br><a href="https://syncopatedtimes.com/beyond-the-bandstand-paul-whiteman-in-american-musical-culture/">Beyond the Bandstand: Paul Whiteman in American Musical Culture — Syncopated Times</a><blockquote>Whiteman was classically trained but liked jazz, associating it closely with the Original Dixieland Jazz Band and other white purveyors of the music.</blockquote></li>
+<li id="src-8" value="8"><span class="stance">supports</span><br><a href="https://www.nps.gov/jazz/learn/historyculture/jazz_history.htm">A New Orleans Jazz History, 1895-1927 — National Park Service</a><blockquote>In 1916 the Victor Talking Machine Company offered Keppard and the Creole Orchestra an opportunity to record, but he refused.</blockquote></li>
+<li id="src-9" value="9"><span class="stance">supports</span><br><a href="http://www.davelippman.com/jazz-marches-in/">Jazz Marches In — Dave Lippman</a><blockquote>French Creole musicians downtown had been playing in marching and dance bands; but in 1894, creoles were expelled from polite White society under new segregation laws, as the distinguished Mr.</blockquote></li>
+<li id="src-10" value="10"><span class="stance">supports</span><br><a href="https://www.nps.gov/jazz/learn/historyculture/jazz_history.htm">A New Orleans Jazz History, 1895-1927 — National Park Service (ODJB recording)</a><blockquote>The band became an instant hit, which led directly to interest for the nation&#x27;s top record manufacturers, Victor and Columbia, who were eager to exploit the new &quot;jazz craze.&quot;</blockquote></li>
+<li id="src-11" value="11"><span class="stance">contradicts</span><br><a href="https://www.smithsonianmag.com/smithsonian-institution/was-first-jazz-recording-made-group-white-guys-180962246/">The First Jazz Recording Was Made by a Group of White Guys? — Smithsonian Magazine (shared environment)</a><blockquote>The early-20th century was a period of entrenched white racism, but in New Orleans, where there was little racial segregation, blacks and whites lived cheek-by-jowl, everyone&#x27;s windows were open and sounds floated from house to house, which meant music was easily shared.</blockquote></li>
+</ol>
+<p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. Passages labeled as possibilities are informed inferences, not verified facts: their sources were checked, but the possibility itself was not confirmed. A human approved the research and reviewed this article before it was published.</p>
+</article>
+<nav class="pager" data-slug="why-was-jazz-music-appropriated" data-feed="../feed.json" aria-label="More articles"></nav><script>
+(function () {
+  var nav = document.querySelector("nav.pager");
+  if (!nav || !window.fetch) return;
+  fetch(nav.dataset.feed).then(function (r) { return r.json(); }).then(function (feed) {
+    var items = feed.items || [], at = items.findIndex(function (e) { return e.id === nav.dataset.slug; });
+    if (at < 0) return;
+    function link(e, cls, label) {
+      if (!e) return;
+      var a = document.createElement("a"), small = document.createElement("small");
+      a.className = cls; a.href = "../" + encodeURIComponent(e.id) + "/";
+      small.textContent = label; a.appendChild(small); a.appendChild(document.createTextNode(e.title));
+      nav.appendChild(a);
+    }
+    link(items[at - 1], "newer", "← Newer");
+    link(items[at + 1], "older", "Older →");
+  }).catch(function () {});
+})();
+</script>
+</main></body></html>

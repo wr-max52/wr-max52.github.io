@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Is the Three-Way Contest Between Coordination, Ideology, and Force a False Contest?</title><script>
+(function () {
+  try {
+    var theme = localStorage.getItem("theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+  window.toggleTheme = function () {
+    try {
+      var theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    } catch (e) {}
+  };
+})();
+</script><style>
+:root { --bg:#fbfaf7; --fg:#1d1d1f; --muted:#6b6b70; --rule:#e3e1dc; --accent:#8a2b2b; --quote:#f1efe9; }
+:root[data-theme="dark"] { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                           --accent:#e08a8a; --quote:#1f1f23; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                            --accent:#e08a8a; --quote:#1f1f23; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font: 18px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; }
+main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+a { color: var(--accent); }
+header.site { font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; letter-spacing: .08em;
+              text-transform: uppercase; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+              flex-wrap: wrap; }
+header.site a { color: var(--muted); text-decoration: none; }
+header.site a:hover, header.site a[aria-current] { color: var(--fg); }
+header.site .brand { margin-right: auto; }
+.back { display: inline-block; font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; color: var(--muted);
+        text-decoration: none; margin-bottom: 1.2rem; }
+.back:hover { color: var(--fg); }
+nav.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem;
+            font: 0.9rem/1.4 -apple-system, system-ui, sans-serif; }
+nav.pager a { text-decoration: none; max-width: 48%; }
+nav.pager .older { margin-left: auto; text-align: right; }
+nav.pager small { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+nav.tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
+nav.tags a { font: 600 0.8rem/1.3 -apple-system, system-ui, sans-serif; padding: .25rem .7rem; border-radius: 999px;
+             border: 1px solid var(--rule); color: var(--muted); text-decoration: none; }
+nav.tags a:hover { border-color: var(--muted); color: var(--fg); }
+nav.tags a.on { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+nav.tags span { opacity: .65; font-weight: 400; margin-left: .2rem; }
+a.epic { text-decoration: none; }
+a.epic:hover { border-color: var(--muted); color: var(--fg); }
+h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; }
+h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+.dek { font-size: 1.2rem; color: var(--muted); margin: 0 0 .75rem; }
+.meta { font: 0.85rem/1.4 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+sup a { text-decoration: none; font: 600 0.7rem -apple-system, system-ui, sans-serif; }
+ol.sources { padding-left: 1.4rem; font-size: 0.95rem; }
+ul.connected { padding-left: 1.2rem; } ul.connected li { margin-bottom: .5rem; }
+ul.connected .why { color: var(--muted); font-size: .9rem; }
+ol.sources li { margin-bottom: 1rem; }
+ol.sources blockquote { margin: .35rem 0 0; padding: .5rem .75rem; background: var(--quote);
+                        border-left: 3px solid var(--rule); }
+aside.claim { margin: 0 0 1.75rem; padding: .9rem 1.1rem; background: var(--quote);
+              border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; }
+aside.claim p { margin: .3rem 0 0; font-size: 1.15rem; line-height: 1.5; }
+aside.claim > .stance { color: var(--accent); }
+.stance { font: 600 0.7rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
+          letter-spacing: .06em; color: var(--muted); }
+.note { font: 0.85rem/1.5 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-top: 1px solid var(--rule); margin-top: 2.5rem; padding-top: 1rem; }
+ul.index { list-style: none; padding: 0; }
+ul.index li { border-bottom: 1px solid var(--rule); padding: 1.1rem 0; }
+ul.index a.title { font-size: 1.25rem; font-weight: 600; text-decoration: none; color: var(--fg); }
+ul.index p { margin: .3rem 0 0; color: var(--muted); }
+.epic { display:inline-block; font: 600 0.72rem/1.3 -apple-system, system-ui, sans-serif; white-space:nowrap;
+        padding: .12rem .5rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted);
+        vertical-align: middle; }
+.epic.proposed { border-style: dashed; }
+.theme-toggle { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .55rem;
+               border:1px solid var(--rule); border-radius:999px; background:var(--bg); color:var(--fg);
+               font:600 0.8rem/1 -apple-system, system-ui, sans-serif; cursor:pointer; }
+.theme-toggle:hover { border-color:var(--muted); }
+.theme-toggle svg { width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:2;
+                    stroke-linecap:round; stroke-linejoin:round; display:none; }
+html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
+html[data-theme="dark"] .theme-toggle .sun { display:block; }
+</style></head>
+<body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
+<a class="back" href="../">&larr; All articles</a><article><h1>Is the Three-Way Contest Between Coordination, Ideology, and Force a False Contest?</h1>
+<p class="dek">A possible misframing of Hume and Marx in the 2013 paper&#x27;s theoretical framework may make coordination theory harder to refute than critics claim, but the brief could not fetch the primary texts and the only empirical anchor—a Federal Reserve speech—does not discriminate between the theories.</p>
+<p class="meta"><a class="epic" href="../?tag=Coordination%20as%20Power" title="Every article tagged Coordination as Power">Coordination as Power</a> Published November 22, 2026 · 9 sources</p>
+<h2>The Contest May Be Misframed</h2>
+<p>Wikipedia's collective-action article quotes Hume's 1738 Treatise: it is "impossible" for a thousand persons to agree because each "seeks a pretext to free himself of the trouble and expence" <sup><a href="#src-1">[1]</a></sup>. Wikipedia's false-consciousness article states that "The term was never used by Karl Marx" <sup><a href="#src-2">[2]</a></sup>.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that the "Hume equals force" label is a misframing, because the passage Wikipedia quotes describes a coordination failure, not coercion, and this rests on the secondary quotation <sup><a href="#src-1">[1]</a></sup>, not the primary text or the 2013 paper, which returned HTTP 403. <span class="stance">Possibility, not verified</span> It is possible that "ideology theory (Marx)" names a later construct, not Marx's own position, because Wikipedia says the term was never his and was theorized by later Marxists from the 1920s <sup><a href="#src-2">[2]</a></sup>, unverified against his or Engels's writings.</p>
+<h2>What Barr&#x27;s Speeches Actually Establish</h2>
+<p>Barr's 14 July 2026 speech says AI may "exacerbate inequality, eliminating some lower- and middle-income jobs while boosting the income and wealth of higher-income individuals" <sup><a href="#src-3">[3]</a></sup>; his 12 November speech reports the top 10 percent hold nearly three-fourths of wealth <sup><a href="#src-4">[4]</a></sup> and names three causes of declining labor share, including "the reduction in the bargaining power of workers" <sup><a href="#src-5">[5]</a></sup>.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that this enumeration points to coordination failure rather than force, since Barr pairs bargaining-power loss with technological change without mentioning coercion, though he gives no reason for the decline, making it an economist's list, not a test of Hardin <sup><a href="#src-5">[5]</a></sup><sup><a href="#src-3">[3]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that new entrants, whom Barr says AI "might disproportionately affect," are least able to coordinate resistance, though no organizing data were found <sup><a href="#src-6">[6]</a></sup>, and that displacement, which he lists first, best distinguishes the theories by dispersing workers <sup><a href="#src-7">[7]</a></sup>.</p>
+<h2>The Fix Points Back to Collective Action</h2>
+<p>MIT Sloan authors argue that "AI needs a combination of new labor standards and tax reforms" <sup><a href="#src-8">[8]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that these institutional remedies require the kind of collective political action that coordination theory locates as the obstacle, because new labor standards and tax reforms cannot emerge without sustained, organized pressure from affected groups <sup><a href="#src-8">[8]</a></sup>. The article does not discuss Hardin or coordination theory, so the connection between the proposed fixes and the theoretical framework is the brief's inference, not the authors' own claim <sup><a href="#src-8">[8]</a></sup>. The MIT Sloan piece summarizes a working paper that was not read in full, leaving the scope, feasibility, and political pathway of the proposed remedies unverified <sup><a href="#src-8">[8]</a></sup>.</p>
+<h2>The Case Against</h2>
+<p>The strongest objection is that the contest is confused before any empirical test. Wikipedia states that "The term was never used by Karl Marx," so "ideology theory (Marx)" names a later construct, not Marx's own position <sup><a href="#src-2">[2]</a></sup>. Barr's 14 July 2026 speech declines to forecast, saying "Since we don't know which of these futures will come about, it is useful to use potential scenarios" <sup><a href="#src-9">[9]</a></sup>, leaving the case hypothetical and unable to discriminate between coordination failure, force, and ideology. No source in the brief supplies data on whether workers fail to organize, whether from fear of sanction, or whether AI gains in 2026 are concentrating among higher earners <sup><a href="#src-9">[9]</a></sup><sup><a href="#src-2">[2]</a></sup>.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that Barr's "scenarios" framing, which declines to say whether AI will widen or narrow inequality, works as an ideology-style belief that lowers the urgency of collective resistance, favoring an ideology reading over pure coordination failure, but this rests only on his stated uncertainty, and no evidence was found on how workers receive the framing, so the possibility is speculative and could be shown wrong by survey data on worker expectations about AI <sup><a href="#src-9">[9]</a></sup>.</p>
+<h2>Sources</h2><ol class="sources">
+<li id="src-1" value="1"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Collective_action_problem">Collective action problem - Wikipedia</a><blockquote>But it is very difficult, and indeed impossible, that a thousand persons should agree in any such action; it being difficult for them to concert so complicated a design, and still more difficult for them to execute it; while each seeks a pretext to free himself of the trouble and expence, and would lay the whole burden on others.[5]</blockquote></li>
+<li id="src-2" value="2"><span class="stance">contradicts</span><br><a href="https://en.wikipedia.org/wiki/False_consciousness">False consciousness - Wikipedia</a><blockquote>The term was never used by Karl Marx.</blockquote></li>
+<li id="src-3" value="3"><span class="stance">supports</span><br><a href="https://www.federalreserve.gov/newsevents/speech/barr20260714a.htm">Speech by Governor Barr on artificial intelligence - Federal Reserve Board</a><blockquote>But it is also the case that AI may instead exacerbate inequality, eliminating some lower- and middle-income jobs while boosting the income and wealth of higher-income individuals.</blockquote></li>
+<li id="src-4" value="4"><span class="stance">supports</span><br><a href="https://www.federalreserve.gov/newsevents/speech/barr20261112a.htm">Speech by Governor Barr on artificial intelligence and inequality - Federal Reserve Board</a><blockquote>The top 10 percent by income of households receive almost one-half of all income in the United States and the top 1 percent receive about one-fifth of income.4 As for wealth, the wealthiest 10 percent of households hold nearly three-fourths of all wealth, and the top 1 percent hold about one-third.</blockquote></li>
+<li id="src-5" value="5"><span class="stance">supports</span><br><a href="https://www.federalreserve.gov/newsevents/speech/barr20261112a.htm">Speech by Governor Barr on artificial intelligence and inequality - Federal Reserve Board</a><blockquote>The first is technological innovations that have reduced demand for labor and decreased wages; the second is the concentration of market power in many industries with a small number of firms; and the third related cause is the reduction in the bargaining power of workers.</blockquote></li>
+<li id="src-6" value="6"><span class="stance">supports</span><br><a href="https://www.federalreserve.gov/newsevents/speech/barr20260714a.htm">Speech by Governor Barr on artificial intelligence - Federal Reserve Board</a><blockquote>AI might disproportionately affect new entrants to the labor market.</blockquote></li>
+<li id="src-7" value="7"><span class="stance">supports</span><br><a href="https://www.federalreserve.gov/newsevents/speech/barr20260714a.htm">Speech by Governor Barr on artificial intelligence - Federal Reserve Board</a><blockquote>First, AI could lead to labor displacement.</blockquote></li>
+<li id="src-8" value="8"><span class="stance">supports</span><br><a href="https://mitsloan.mit.edu/ideas-made-to-matter/5-investments-to-close-gap-between-ai-wealth-and-welfare">5 investments to close the gap between AI wealth and welfare | MIT Sloan</a><blockquote>AI needs a combination of new labor standards and tax reforms.</blockquote></li>
+<li id="src-9" value="9"><span class="stance">contradicts</span><br><a href="https://www.federalreserve.gov/newsevents/speech/barr20260714a.htm">Speech by Governor Barr on artificial intelligence - Federal Reserve Board</a><blockquote>Since we don&#x27;t know which of these futures will come about, it is useful to use potential scenarios, as I&#x27;ve done previously with respect to AI and the economy.</blockquote></li>
+</ol>
+<p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. Passages labeled as possibilities are informed inferences, not verified facts: their sources were checked, but the possibility itself was not confirmed. A human approved the research and reviewed this article before it was published.</p>
+<h2>Connected articles</h2><ul class="connected"><li><a href="../dialog-club/">Leaked Documents Expose Membership Roster and Off-the-Record Sessions of Peter Thiel&#x27;s Dialog Society</a><br><span class="why">Hardin&#x27;s coordination theory is the abstract framework; the Dialog retreats and JINSA generals&#x27; letters are the empirical instantiation; the shared thread is coordination as the mechanism by which power is exercised without formal authority.</span></li></ul>
+</article>
+<nav class="pager" data-slug="does-coordination-theory-hardin-explain" data-feed="../feed.json" aria-label="More articles"></nav><script>
+(function () {
+  var nav = document.querySelector("nav.pager");
+  if (!nav || !window.fetch) return;
+  fetch(nav.dataset.feed).then(function (r) { return r.json(); }).then(function (feed) {
+    var items = feed.items || [], at = items.findIndex(function (e) { return e.id === nav.dataset.slug; });
+    if (at < 0) return;
+    function link(e, cls, label) {
+      if (!e) return;
+      var a = document.createElement("a"), small = document.createElement("small");
+      a.className = cls; a.href = "../" + encodeURIComponent(e.id) + "/";
+      small.textContent = label; a.appendChild(small); a.appendChild(document.createTextNode(e.title));
+      nav.appendChild(a);
+    }
+    link(items[at - 1], "newer", "← Newer");
+    link(items[at + 1], "older", "Older →");
+  }).catch(function () {});
+})();
+</script>
+</main></body></html>
