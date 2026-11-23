@@ -93,7 +93,7 @@ function apply(d) {
   });
   root.querySelectorAll(".check[data-step]").forEach(c => {
     const n = d.parked[c.dataset.step] || 0, b = c.querySelector(".parked-count");
-    if (b) { b.textContent = n; b.hidden = !n; b.title = `${n} parked here`; }
+    if (b) { b.textContent = n; b.hidden = !n; b.title = ((window.I18N || {})["{n} parked here"] || "{n} parked here").replace("{n}", n); }
   });
   relightCards(d.working);
   const now = root.querySelector(".now");
@@ -128,7 +128,7 @@ function relightCards(working) {
     card.classList.toggle("active", !!e);
     const doing = card.querySelector(".doing");
     if (doing) {
-      const text = e ? `${e.name} is working on this now.` : doing.dataset.idle || "";
+      const text = e ? `${e.name} working now` : doing.dataset.idle || "";
       const shown = text ? ` · ${text}` : "";
       if (doing.textContent !== shown) doing.textContent = shown;
     }

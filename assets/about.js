@@ -6,14 +6,14 @@
 "use strict";
 const EVERY = 3500;                                      // ms per frame
 const WORKERS = { assistant: "Research Assistant", pi: "Principal Investigator", desk: "Code" };
-const AGENTS = { theorist: "Theorist", finder: "Mission finder", sources: "Source finder", contacts: "Contact finder",
+const AGENTS = { theorist: "Theorist", finder: "Mission finder", sources: "Source finder", outreach: "Outreach agent",
                  brief: "Brief writer", source_check: "Source checker", writer: "Article writer",
-                 article_check: "Article checker", publisher: "Publisher" };
+                 article_check: "Article checker", article_rating: "Article rater", publisher: "Publisher" };
 const DOING = { theorist: "is looking across every mission for patterns", finder: "is searching for new missions",
-                sources: "is searching and reading sources for", contacts: "is looking for people to ask about",
+                sources: "is searching and reading sources for", outreach: "is asking people about",
                 brief: "is writing the brief for", source_check: "is checking every quote in the brief for",
                 writer: "is writing the article for", article_check: "is checking the article's citations for",
-                publisher: "is publishing" };
+                article_rating: "is rating the article for", publisher: "is publishing" };
 const NAMES = { a: "mission A", b: "mission B", c: "mission C" };
 
 // One frame per step of the made-up run: who works on what, each mission's state, and who waits on you.
@@ -28,11 +28,13 @@ const FRAMES = [
   F(["source_check", "b"], ["sources", "c"], null, { a: "BRIEF_READY", b: "RESEARCHING", c: "RESEARCHING" }, 1),
   F(["writer", "a"], ["sources", "c"], null, { a: "WRITING", b: "BRIEF_READY", c: "RESEARCHING" }, 1),
   F(["article_check", "a"], ["sources", "c"], null, { a: "WRITING", b: "BRIEF_READY", c: "RESEARCHING" }, 1),
-  F(["brief", "c"], null, null, { a: "ARTICLE_READY", b: "BRIEF_READY", c: "RESEARCHING" }, 1, 1),
+  F(["brief", "c"], ["article_rating", "a"], null, { a: "WRITING", b: "BRIEF_READY", c: "RESEARCHING" }, 1),
+  F(["source_check", "c"], null, null, { a: "ARTICLE_READY", b: "BRIEF_READY", c: "RESEARCHING" }, 1, 1),
   F(["writer", "b"], null, ["publisher", "a"], { a: "DONE", b: "WRITING", c: "RESEARCHING" }),
   F(["article_check", "b"], null, null, { a: "DONE", b: "WRITING", c: "BRIEF_READY" }, 1),
-  F(["writer", "c"], null, ["publisher", "b"], { a: "DONE", b: "DONE", c: "WRITING" }),
-  F(["article_check", "c"], null, null, { a: "DONE", b: "DONE", c: "WRITING" }),
+  F(["writer", "c"], ["article_rating", "b"], null, { a: "DONE", b: "WRITING", c: "WRITING" }),
+  F(["article_check", "c"], null, null, { a: "DONE", b: "ARTICLE_READY", c: "WRITING" }, 0, 1),
+  F(null, ["article_rating", "c"], ["publisher", "b"], { a: "DONE", b: "DONE", c: "WRITING" }),
   F(null, null, ["publisher", "c"], { a: "DONE", b: "DONE", c: "DONE" }),
 ];
 

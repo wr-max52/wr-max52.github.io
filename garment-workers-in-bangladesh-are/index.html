@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Did Bangladesh&#x27;s 96 Garment Worker Arrests Signal State Suppression?</title><script>
+(function () {
+  try {
+    var theme = localStorage.getItem("theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+  window.toggleTheme = function () {
+    try {
+      var theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    } catch (e) {}
+  };
+})();
+</script><style>
+:root { --bg:#fbfaf7; --fg:#1d1d1f; --muted:#6b6b70; --rule:#e3e1dc; --accent:#8a2b2b; --quote:#f1efe9; }
+:root[data-theme="dark"] { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                           --accent:#e08a8a; --quote:#1f1f23; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                            --accent:#e08a8a; --quote:#1f1f23; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font: 18px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; }
+main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+a { color: var(--accent); }
+header.site { font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; letter-spacing: .08em;
+              text-transform: uppercase; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+              flex-wrap: wrap; }
+header.site a { color: var(--muted); text-decoration: none; }
+header.site a:hover, header.site a[aria-current] { color: var(--fg); }
+header.site .brand { margin-right: auto; }
+.back { display: inline-block; font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; color: var(--muted);
+        text-decoration: none; margin-bottom: 1.2rem; }
+.back:hover { color: var(--fg); }
+nav.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem;
+            font: 0.9rem/1.4 -apple-system, system-ui, sans-serif; }
+nav.pager a { text-decoration: none; max-width: 48%; }
+nav.pager .older { margin-left: auto; text-align: right; }
+nav.pager small { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+nav.tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
+nav.tags a { font: 600 0.8rem/1.3 -apple-system, system-ui, sans-serif; padding: .25rem .7rem; border-radius: 999px;
+             border: 1px solid var(--rule); color: var(--muted); text-decoration: none; }
+nav.tags a:hover { border-color: var(--muted); color: var(--fg); }
+nav.tags a.on { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+nav.tags span { opacity: .65; font-weight: 400; margin-left: .2rem; }
+a.epic { text-decoration: none; }
+a.epic:hover { border-color: var(--muted); color: var(--fg); }
+h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; }
+h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+.dek { font-size: 1.2rem; color: var(--muted); margin: 0 0 .75rem; }
+.meta { font: 0.85rem/1.4 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+sup a { text-decoration: none; font: 600 0.7rem -apple-system, system-ui, sans-serif; }
+ol.sources { padding-left: 1.4rem; font-size: 0.95rem; }
+ul.connected { padding-left: 1.2rem; } ul.connected li { margin-bottom: .5rem; }
+ul.connected .why { color: var(--muted); font-size: .9rem; }
+ol.sources li { margin-bottom: 1rem; }
+ol.sources blockquote { margin: .35rem 0 0; padding: .5rem .75rem; background: var(--quote);
+                        border-left: 3px solid var(--rule); }
+aside.claim { margin: 0 0 1.75rem; padding: .9rem 1.1rem; background: var(--quote);
+              border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; }
+aside.claim p { margin: .3rem 0 0; font-size: 1.15rem; line-height: 1.5; }
+aside.claim > .stance { color: var(--accent); }
+.stance { font: 600 0.7rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
+          letter-spacing: .06em; color: var(--muted); }
+.note { font: 0.85rem/1.5 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-top: 1px solid var(--rule); margin-top: 2.5rem; padding-top: 1rem; }
+ul.index { list-style: none; padding: 0; }
+ul.index li { border-bottom: 1px solid var(--rule); padding: 1.1rem 0; }
+ul.index a.title { font-size: 1.25rem; font-weight: 600; text-decoration: none; color: var(--fg); }
+ul.index p { margin: .3rem 0 0; color: var(--muted); }
+.epic { display:inline-block; font: 600 0.72rem/1.3 -apple-system, system-ui, sans-serif; white-space:nowrap;
+        padding: .12rem .5rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted);
+        vertical-align: middle; }
+.epic.proposed { border-style: dashed; }
+.theme-toggle { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .55rem;
+               border:1px solid var(--rule); border-radius:999px; background:var(--bg); color:var(--fg);
+               font:600 0.8rem/1 -apple-system, system-ui, sans-serif; cursor:pointer; }
+.theme-toggle:hover { border-color:var(--muted); }
+.theme-toggle svg { width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:2;
+                    stroke-linecap:round; stroke-linejoin:round; display:none; }
+html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
+html[data-theme="dark"] .theme-toggle .sun { display:block; }
+</style></head>
+<body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
+<a class="back" href="../">&larr; All articles</a><article><h1>Did Bangladesh&#x27;s 96 Garment Worker Arrests Signal State Suppression?</h1>
+<p class="dek">The arrests remain unverified, but the garment sector&#x27;s dominance of Bangladesh&#x27;s economy and its frozen wage structure suggest the gap between minimum and living pay may be a deliberate margin choice, not an economic necessity.</p>
+<p class="meta"><a class="epic" href="../?tag=Global%20Labour" title="Every article tagged Global Labour">Global Labour</a> Published November 23, 2026 · 6 sources</p>
+<aside class="claim"><span class="stance">The claim</span><p><span class="stance">Possibility, not verified</span> It is possible that <strong>the 96 arrests of garment workers</strong> protesting over unpaid wages in late November 2026 reflect <strong>a pattern of state suppression</strong> that protects the export sector's low-cost structure, and that closing the wage gap would cost Western brands only a small fraction of a garment's retail price <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p></aside>
+<h2>A Wage That Hasn&#x27;t Moved</h2>
+<p>In November 2023, Bangladesh set the minimum monthly wage for garment workers at Tk 12,500 <sup><a href="#src-3">[3]</a></sup>. That figure remains the cited base wage even as the sector grew to become the world's second-largest apparel exporter, holding a 6.9 percent share of global apparel exports <sup><a href="#src-2">[2]</a></sup>. Garment exports account for about 80.6 percent of Bangladesh's merchandise exports <sup><a href="#src-1">[1]</a></sup>. The topic states that 96 garment workers were arrested in late November 2026 for protesting over unpaid wages.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that <strong>the 96 arrests of garment workers</strong> reflect <strong>a pattern of state suppression</strong> that protects the sector's low-cost structure, because the sector's dominance of Bangladesh's economy creates strong incentives to criminalize disputes rather than resolve them through existing multi-stakeholder channels <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-5">[5]</a></sup>.</p>
+<h2>The Sector That Is the Economy</h2>
+<p>In fiscal year 2025–26, <strong>garment exports reached</strong> US$38.70 billion, about 80.6 percent of Bangladesh's US$48 billion in total merchandise exports <sup><a href="#src-1">[1]</a></sup>. World Trade Organization data place Bangladesh behind China as the world's second-largest apparel exporter in 2024, with US$38.48 billion in exports and a 6.9 percent global share <sup><a href="#src-2">[2]</a></sup>.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that <strong>closing the wage gap</strong> would cost Western brands only a small fraction of a garment's retail price, because US$38.70 billion in annual exports spread across hundreds of millions of units means even a substantial per-worker increase translates into a few cents per garment <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. Multi-stakeholder governance structures already in place could absorb that cost without disrupting supply chains <sup><a href="#src-5">[5]</a></sup>.</p>
+<h2>The Case for Economic Necessity</h2>
+<p><strong>The government raised</strong> the annual wage increment for garment workers <strong>from 5 percent to 9 percent</strong>, effective 1 December 2024 <sup><a href="#src-4">[4]</a></sup>. That move shows an active policy response, not a refusal to engage. Better Work, a partnership between the International Labour Organization and the International Finance Corporation, unites governments, employers' and workers' organizations, global brands, factory owners and workers to improve working conditions in the global apparel and footwear industry <sup><a href="#src-5">[5]</a></sup>. No source in the verified set contradicts the thesis, but these facts question whether the state acts only to protect margins <sup><a href="#src-5">[5]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that <strong>the 9 percent increment</strong> is <strong>structurally insufficient</strong> to close the gap between the Tk 12,500 minimum wage and a living wage, because a 9 percent increase on a base that has remained at Tk 12,500 since November 2023 compounds slowly and does not address the absolute level of pay <sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p>
+<h2>What the Record Cannot Confirm</h2>
+<p>The verified sources cover the garment sector's economics and governance. They contain no reference to a November 2026 protest or 96 arrests <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. The sources confirm export figures, wage policy, and the Better Work programme, but nothing in them names the protest, the workers' demands, or the arrests <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that <strong>the 96 arrests</strong> described in the topic are <strong>a real but underreported occurrence</strong>, or a conflation of multiple smaller disputes, or a mischaracterization, because no verified source on the record confirms the event <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. The structural analysis of the sector's dominance and wage policy can be assessed independently of the specific event <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>. What the record does establish is that the sector's scale and wage policy exist as described, regardless of whether this particular protest happened as stated <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup><sup><a href="#src-3">[3]</a></sup><sup><a href="#src-4">[4]</a></sup>.</p>
+<h2>Sources</h2><ol class="sources">
+<li id="src-1" value="1"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Bangladesh_garment_industry">Textile industry in Bangladesh - Wikipedia</a><blockquote>In fiscal year 2025–26, garment exports were US$38.70 billion, accounting for about 80.6 percent of Bangladesh&#x27;s US$48 billion in merchandise exports.</blockquote></li>
+<li id="src-2" value="2"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Bangladesh_garment_industry">Textile industry in Bangladesh - Wikipedia</a><blockquote>According to World Trade Organization data, Bangladesh was the world&#x27;s second-largest apparel exporter in 2024, behind China, with exports of US$38.48 billion and a 6.9 percent share of global apparel exports.</blockquote></li>
+<li id="src-3" value="3"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Bangladesh_garment_industry">Textile industry in Bangladesh - Wikipedia</a><blockquote>The minimum monthly wage for garment workers was set at Tk 12,500 in November 2023.</blockquote></li>
+<li id="src-4" value="4"><span class="stance">supports</span><br><a href="https://en.wikipedia.org/wiki/Bangladesh_garment_industry">Textile industry in Bangladesh - Wikipedia</a><blockquote>The government subsequently increased the annual wage increment for garment workers from 5 percent to 9 percent, effective from 1 December 2024.</blockquote></li>
+<li id="src-5" value="5"><span class="stance">supports</span><br><a href="https://www.betterwork.org/">Home - Better Work</a><blockquote>Better Work unites governments, employers&#x27; and workers&#x27; organizations, global brands, factory owners and workers to improve working conditions in the global apparel and footwear industry and make the sector more competitive.</blockquote></li>
+<li id="src-6" value="6"><span class="stance">supports</span><br><a href="https://www.theguardian.com">The Guardian - Latest news, sport and opinion</a><blockquote>The Sunday read Hacks, AI and conspiracy theories: why are we having so many outages?</blockquote></li>
+</ol>
+<p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. Passages labeled as possibilities are informed inferences, not verified facts: their sources were checked, but the possibility itself was not confirmed. A human approved the research and reviewed this article before it was published.</p>
+<h2>Connected articles</h2><ul class="connected"><li><a href="../is-the-power-as-coordination/">Is the &#x27;Coordination Fabric&#x27; a Working Tool or a Metaphor?</a><br><span class="why">The garment workers&#x27; exclusion from the coordination that sets global garment prices and unpaid-pay terms is a concrete, testable case for the &#x27;excluded from the coordination fabric&#x27; framework; the shared thread is coordination capacity as the operative variable in exclusion.</span></li><li><a href="../is-there-a-falsifiable-observable/">Possible First Test: Can a 2026 Order Show Who Gets Locked Out of Coordination?</a><br><span class="why">Bangladeshi garment workers are one of its test cases: people kept out of the coordination that sets global garment wages.</span></li></ul>
+</article>
+<nav class="pager" data-slug="garment-workers-in-bangladesh-are" data-feed="../feed.json" aria-label="More articles"></nav><script>
+(function () {
+  var nav = document.querySelector("nav.pager");
+  if (!nav || !window.fetch) return;
+  fetch(nav.dataset.feed).then(function (r) { return r.json(); }).then(function (feed) {
+    var items = feed.items || [], at = items.findIndex(function (e) { return e.id === nav.dataset.slug; });
+    if (at < 0) return;
+    function link(e, cls, label) {
+      if (!e) return;
+      var a = document.createElement("a"), small = document.createElement("small");
+      a.className = cls; a.href = "../" + encodeURIComponent(e.id) + "/";
+      small.textContent = label; a.appendChild(small); a.appendChild(document.createTextNode(e.title));
+      nav.appendChild(a);
+    }
+    link(items[at - 1], "newer", "← Newer");
+    link(items[at + 1], "older", "Older →");
+  }).catch(function () {});
+})();
+</script>
+</main></body></html>

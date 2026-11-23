@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Possible First Test: Can a 2026 Order Show Who Gets Locked Out of Coordination?</title><script>
+(function () {
+  try {
+    var theme = localStorage.getItem("theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
+  } catch (e) { document.documentElement.dataset.theme = "light"; }
+  window.toggleTheme = function () {
+    try {
+      var theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+    } catch (e) {}
+  };
+})();
+</script><style>
+:root { --bg:#fbfaf7; --fg:#1d1d1f; --muted:#6b6b70; --rule:#e3e1dc; --accent:#8a2b2b; --quote:#f1efe9; }
+:root[data-theme="dark"] { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                           --accent:#e08a8a; --quote:#1f1f23; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { --bg:#151517; --fg:#ececee; --muted:#9a9aa0; --rule:#2c2c30;
+                            --accent:#e08a8a; --quote:#1f1f23; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font: 18px/1.65 Georgia, "Iowan Old Style", "Times New Roman", serif; }
+main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+a { color: var(--accent); }
+header.site { font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; letter-spacing: .08em;
+              text-transform: uppercase; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;
+              flex-wrap: wrap; }
+header.site a { color: var(--muted); text-decoration: none; }
+header.site a:hover, header.site a[aria-current] { color: var(--fg); }
+header.site .brand { margin-right: auto; }
+.back { display: inline-block; font: 600 0.85rem/1 -apple-system, system-ui, sans-serif; color: var(--muted);
+        text-decoration: none; margin-bottom: 1.2rem; }
+.back:hover { color: var(--fg); }
+nav.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem;
+            font: 0.9rem/1.4 -apple-system, system-ui, sans-serif; }
+nav.pager a { text-decoration: none; max-width: 48%; }
+nav.pager .older { margin-left: auto; text-align: right; }
+nav.pager small { display: block; color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; }
+nav.tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .5rem; }
+nav.tags a { font: 600 0.8rem/1.3 -apple-system, system-ui, sans-serif; padding: .25rem .7rem; border-radius: 999px;
+             border: 1px solid var(--rule); color: var(--muted); text-decoration: none; }
+nav.tags a:hover { border-color: var(--muted); color: var(--fg); }
+nav.tags a.on { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+nav.tags span { opacity: .65; font-weight: 400; margin-left: .2rem; }
+a.epic { text-decoration: none; }
+a.epic:hover { border-color: var(--muted); color: var(--fg); }
+h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; }
+h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+.dek { font-size: 1.2rem; color: var(--muted); margin: 0 0 .75rem; }
+.meta { font: 0.85rem/1.4 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+sup a { text-decoration: none; font: 600 0.7rem -apple-system, system-ui, sans-serif; }
+ol.sources { padding-left: 1.4rem; font-size: 0.95rem; }
+ul.connected { padding-left: 1.2rem; } ul.connected li { margin-bottom: .5rem; }
+ul.connected .why { color: var(--muted); font-size: .9rem; }
+ol.sources li { margin-bottom: 1rem; }
+ol.sources blockquote { margin: .35rem 0 0; padding: .5rem .75rem; background: var(--quote);
+                        border-left: 3px solid var(--rule); }
+aside.claim { margin: 0 0 1.75rem; padding: .9rem 1.1rem; background: var(--quote);
+              border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; }
+aside.claim p { margin: .3rem 0 0; font-size: 1.15rem; line-height: 1.5; }
+aside.claim > .stance { color: var(--accent); }
+.stance { font: 600 0.7rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
+          letter-spacing: .06em; color: var(--muted); }
+.note { font: 0.85rem/1.5 -apple-system, system-ui, sans-serif; color: var(--muted);
+        border-top: 1px solid var(--rule); margin-top: 2.5rem; padding-top: 1rem; }
+ul.index { list-style: none; padding: 0; }
+ul.index li { border-bottom: 1px solid var(--rule); padding: 1.1rem 0; }
+ul.index a.title { font-size: 1.25rem; font-weight: 600; text-decoration: none; color: var(--fg); }
+ul.index p { margin: .3rem 0 0; color: var(--muted); }
+.epic { display:inline-block; font: 600 0.72rem/1.3 -apple-system, system-ui, sans-serif; white-space:nowrap;
+        padding: .12rem .5rem; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted);
+        vertical-align: middle; }
+.epic.proposed { border-style: dashed; }
+.theme-toggle { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .55rem;
+               border:1px solid var(--rule); border-radius:999px; background:var(--bg); color:var(--fg);
+               font:600 0.8rem/1 -apple-system, system-ui, sans-serif; cursor:pointer; }
+.theme-toggle:hover { border-color:var(--muted); }
+.theme-toggle svg { width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:2;
+                    stroke-linecap:round; stroke-linejoin:round; display:none; }
+html:not([data-theme="dark"]) .theme-toggle .moon { display:block; }
+html[data-theme="dark"] .theme-toggle .sun { display:block; }
+</style></head>
+<body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
+<a class="back" href="../">&larr; All articles</a><article><h1>Possible First Test: Can a 2026 Order Show Who Gets Locked Out of Coordination?</h1>
+<p class="dek">A November 2026 executive order may offer the first public rule for telling apart being shut out of a power network from being shut out for lack of money or rank, but no group has yet used it that way.</p>
+<p class="meta"><a class="epic" href="../?tag=Bilateral%20Shadow" title="Every article tagged Bilateral Shadow">Bilateral Shadow</a> Published November 23, 2026 · 4 sources</p>
+<aside class="claim"><span class="stance">The claim</span><p><span class="stance">Possibility, not verified</span> It is possible that <strong>Executive Order 14438</strong> gives the public <strong>the first written test</strong> for telling apart being locked out of a coordination network from being locked out for lack of money or rank, a distinction that matters because it would let any excluded group check whether it is bound to answer to a node it cannot reach <sup><a href="#src-1">[1]</a></sup>. No source in the evidence set shows a group has used that test to act on its exclusion <sup><a href="#src-2">[2]</a></sup>.</p></aside>
+<h2>A List No One Was Meant to See</h2>
+<p>In June 2026, a Dialog retreats participant list surfaced in the website's source code, visible in an Internet Archive snapshot dated 15 June <sup><a href="#src-3">[3]</a></sup>. The list named officials from both US parties, leaders from Saudi Arabia, Pakistan, the United Kingdom, and Japan, and prominent opinion writers <sup><a href="#src-3">[3]</a></sup>. The organization had spent two decades declining to disclose its members <sup><a href="#src-3">[3]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that this invitation-only structure, with no public membership rule, <strong>makes coordination exclusion unfalsifiable</strong>, because no excluded group can test its own exclusion without a leak <sup><a href="#src-3">[3]</a></sup>.</p>
+<p>In November 2026, <strong>Executive Order 14438</strong> required federal contractors to <strong>notify the White House</strong> of congressional requests touching their work and to <strong>abide by instructions</strong> on withholding communications the White House deemed protected by executive privilege <sup><a href="#src-1">[1]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that this order supplies the first published, falsifiable criterion distinguishing coordination exclusion from resource or authority exclusion, because any contractor can check whether it is bound to coordinate with a node it cannot reach <sup><a href="#src-1">[1]</a></sup>.</p>
+<h2>What the Iran-Contra Report Already Showed</h2>
+<p>The 1987 Iran-Contra report describes a private organization called the Enterprise that operated outside formal channels <sup><a href="#src-4">[4]</a></sup>. <strong>The report records</strong> that it "had its own airplanes, pilots, airfield, operatives, ship, secure communications devices, and secret Swiss bank accounts" <sup><a href="#src-4">[4]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that this shows a parallel coordination structure was historically observable in its physical infrastructure, but was never formalized as a public criterion an excluded group could use to identify its own exclusion, because the report was a one-time investigation, not a standing tool <sup><a href="#src-4">[4]</a></sup>.</p>
+<p><strong>The order's text limits</strong> its coordination requirement to federal contractors and their subcontractors <sup><a href="#src-1">[1]</a></sup>. <span class="stance">Possibility, not verified</span> It is possible that this scope means workers excluded from the coordination that sets global garment wages fall outside the test, because they are not federal contractors <sup><a href="#src-1">[1]</a></sup>.</p>
+<h2>The Case Against the Distinction</h2>
+<p>In April 2025, Lead Stories fact-checked a claim that Sen. Adam Schiff and Rep. Jamie Raskin held a "shadow government" hearing on April 7 <sup><a href="#src-2">[2]</a></sup>. <strong>The meeting was</strong> a "shadow hearing" — a one-party congressional meeting, distinct from a conventional committee hearing that requires both parties <sup><a href="#src-2">[2]</a></sup>. The term "shadow government" came from critics, not the participants <sup><a href="#src-2">[2]</a></sup>.</p>
+<p><span class="stance">Possibility, not verified</span> It is possible that <strong>informal coordination is a normal, legitimate legislative practice</strong>, meaning exclusion from an informal node is a routine feature of institutional design, not a specific, actionable form of coordination exclusion <sup><a href="#src-2">[2]</a></sup>. If informal coordination is routine, then exclusion from any closed node is fully explained by authority or resource exclusion, and the "coordination" variable is redundant <sup><a href="#src-2">[2]</a></sup>.</p>
+<h2>What the Sources Do Not Settle</h2>
+<p>No source in the evidence set shows a group identifying its own exclusion as coordination exclusion and using that label to gain entry <sup><a href="#src-2">[2]</a></sup>. The order's text is public, and its requirements are specific, but <strong>no excluded group has run the test</strong> and acted on the result <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. The criterion is falsifiable in form: one can read the text and see who is bound. No source shows anyone has done that and changed their position <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>.</p>
+<p><strong>The order binds</strong> only federal contractors and their subcontractors <sup><a href="#src-1">[1]</a></sup>. Workers excluded from the coordination that sets global garment wages are not federal contractors, so the test does not reach them <sup><a href="#src-1">[1]</a></sup>. Whether the criterion generalizes beyond that domain remains open <sup><a href="#src-1">[1]</a></sup>.</p>
+<h2>Sources</h2><ol class="sources">
+<li id="src-1" value="1"><span class="stance">supports</span><br><a href="https://www.whitehouse.gov/presidential-actions/2026/11/protecting-the-executives-privileges-and-enhancing-efficiencies-in-federal-contracting/">PROTECTING THE EXECUTIVE&#x27;S PRIVILEGES AND ENHANCING EFFICIENCIES IN FEDERAL CONTRACTING</a><blockquote>A lack of coordination between Federal contractors and the executive branch undermines the ability of contractors to provide economical and efficient goods and services.</blockquote></li>
+<li id="src-2" value="2"><span class="stance">contradicts</span><br><a href="https://leadstories.com/hoax-alert/2025/04/fact-check-shadow-government-hearing-democrats.html">Fact Check: Congressional Democrats Did NOT Hold a Self-Described &#x27;Shadow Government&#x27; Hearing in April 2025</a><blockquote>The meeting itself was something known as a &quot;shadow hearing&quot; -- that is, one involving members of only one party, as distinct from a conventional House or Senate committee hearing, which requires the involvement of members from both parties.</blockquote></li>
+<li id="src-3" value="3"><span class="stance">supports</span><br><a href="https://www.theguardian.com/technology/2026/jun/20/trump-elon-musk-peter-thiel-retreat">Key Trump allies and Musk on leaked list for secretive Peter Thiel retreat</a><blockquote>The list indicates an organization capable of mustering a unique mix of government, corporate and cultural power, though many names on the list probably attended Dialog events before Thiel&#x27;s association with the political right and the Trump era.</blockquote></li>
+<li id="src-4" value="4"><span class="stance">supports</span><br><a href="https://www.presidency.ucsb.edu/documents/excerpts-the-report-congressional-committees-investigating-the-iran-contra-affair">Excerpts of the Report of Congressional Committees Investigating the Iran-Contra Affair</a><blockquote>The Enterprise, functioning largely at North&#x27;s direction, had its own airplanes, pilots, airfield, operatives, ship, secure communications devices, and secret Swiss bank accounts.</blockquote></li>
+</ol>
+<p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. Passages labeled as possibilities are informed inferences, not verified facts: their sources were checked, but the possibility itself was not confirmed. A human approved the research and reviewed this article before it was published.</p>
+<h2>Connected articles</h2><ul class="connected"><li><a href="../is-the-power-as-coordination/">Is the &#x27;Coordination Fabric&#x27; a Working Tool or a Metaphor?</a><br><span class="why">The falsifiability mission exists to test the coordination-fabric framework, which that mission admits it cannot test.</span></li><li><a href="../garment-workers-in-bangladesh-are/">Did Bangladesh&#x27;s 96 Garment Worker Arrests Signal State Suppression?</a><br><span class="why">Bangladeshi garment workers are one of its test cases: people kept out of the coordination that sets global garment wages.</span></li><li><a href="../ice-is-making-arrests-at/">Possible Conflict at Boeing Field: ICE Arrests and Washington Sheriffs Ending 287(g) Agreements?</a><br><span class="why">Sheriffs ending 287(g) agreements is its test case of local actors pulling out of a federal coordination point.</span></li><li><a href="../does-janine-wedel-s-establishment/">Are Thiel&#x27;s Retreats and Generals&#x27; Letters Replacing Washington?</a><br><span class="why">Wedel&#x27;s &#x27;outsider class&#x27; is a named exclusion category the falsifiable criterion should be able to test.</span></li></ul>
+</article>
+<nav class="pager" data-slug="is-there-a-falsifiable-observable" data-feed="../feed.json" aria-label="More articles"></nav><script>
+(function () {
+  var nav = document.querySelector("nav.pager");
+  if (!nav || !window.fetch) return;
+  fetch(nav.dataset.feed).then(function (r) { return r.json(); }).then(function (feed) {
+    var items = feed.items || [], at = items.findIndex(function (e) { return e.id === nav.dataset.slug; });
+    if (at < 0) return;
+    function link(e, cls, label) {
+      if (!e) return;
+      var a = document.createElement("a"), small = document.createElement("small");
+      a.className = cls; a.href = "../" + encodeURIComponent(e.id) + "/";
+      small.textContent = label; a.appendChild(small); a.appendChild(document.createTextNode(e.title));
+      nav.appendChild(a);
+    }
+    link(items[at - 1], "newer", "← Newer");
+    link(items[at + 1], "older", "Older →");
+  }).catch(function () {});
+})();
+</script>
+</main></body></html>
