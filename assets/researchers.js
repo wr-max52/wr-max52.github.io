@@ -3174,7 +3174,7 @@ const crews = [], guides = [];
 function rescan() {
   for (const s of stages.slice()) {
     if (!s.host.isConnected) {
-      const sel = s.kind === "flow" ? ".flow-track[data-lab]" : s.host.dataset.id
+      const sel = s.kind === "flow" ? ".flow-track[data-lab]" : "desk" in s.host.dataset ? "[data-desk]" : s.host.dataset.id
         ? `.note[data-id="${CSS.escape(s.host.dataset.id)}"]` : `.card[href="${CSS.escape(s.host.getAttribute("href"))}"]`;
       const next = document.querySelector(sel);
       if (!next || stages.some(o => o.host === next)) { s.save(); s.kill(); stages.splice(stages.indexOf(s), 1); continue; }
@@ -3183,10 +3183,10 @@ function rescan() {
     if (s.kind !== "card") continue;
     if (!s.host.dataset.lab) { if (!s.retired) s.retire(); }
     else if (s.retired) s.revive();
-    else s.worker = s.host.dataset.worker || null;   // the card changed hands: its next visitor is from that crew
+    else { s.worker = s.host.dataset.worker || null; s.mood = s.host.dataset.lab; }   // the card changed hands (or, on the desk's card, agents): its next visitor is from that crew
   }
   for (let i = stages.length - 1; i >= 0; i--) if (stages[i].dead) { stages[i].kill(); stages.splice(i, 1); }
-  document.querySelectorAll(".card[data-lab], .note[data-lab]").forEach(c => { if (!stages.some(s => s.host === c)) stages.push(new Stage(c, "card")); });
+  document.querySelectorAll(".card[data-lab], .note[data-lab], [data-desk][data-lab]").forEach(c => { if (!stages.some(s => s.host === c)) stages.push(new Stage(c, "card")); });
   const track = document.querySelector(".flow-track[data-lab]");
   if (track && !stages.some(s => s.host === track)) stages.push(new FlowStage(track));
   document.querySelectorAll(".crew[data-crew]").forEach(c => { if (!crews.some(o => o.host === c)) crews.push(new Crew(c)); });

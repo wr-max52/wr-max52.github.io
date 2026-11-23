@@ -58,9 +58,15 @@ h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
         border-bottom: 1px solid var(--rule); padding-bottom: 1rem; margin-bottom: 1.5rem; }
 sup a { text-decoration: none; font: 600 0.7rem -apple-system, system-ui, sans-serif; }
 ol.sources { padding-left: 1.4rem; font-size: 0.95rem; }
+ul.connected { padding-left: 1.2rem; } ul.connected li { margin-bottom: .5rem; }
+ul.connected .why { color: var(--muted); font-size: .9rem; }
 ol.sources li { margin-bottom: 1rem; }
 ol.sources blockquote { margin: .35rem 0 0; padding: .5rem .75rem; background: var(--quote);
                         border-left: 3px solid var(--rule); }
+aside.claim { margin: 0 0 1.75rem; padding: .9rem 1.1rem; background: var(--quote);
+              border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; }
+aside.claim p { margin: .3rem 0 0; font-size: 1.15rem; line-height: 1.5; }
+aside.claim > .stance { color: var(--accent); }
 .stance { font: 600 0.7rem -apple-system, system-ui, sans-serif; text-transform: uppercase;
           letter-spacing: .06em; color: var(--muted); }
 .note { font: 0.85rem/1.5 -apple-system, system-ui, sans-serif; color: var(--muted);
@@ -85,7 +91,7 @@ html[data-theme="dark"] .theme-toggle .sun { display:block; }
 <body><main><header class="site"><a class="brand" href="../">Mission Loop</a><a href="../">Articles</a><a href="../about/">About</a><button type="button" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle light / dark"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></header>
 <a class="back" href="../">&larr; All articles</a><article><h1>Peer-Reviewed Necropsy Study Finds Indoor Cat Longevity Advantage Concentrated in First Year of Life</h1>
 <p class="dek">A 2022 study of 3,108 cats shows that the widely cited gap between indoor and outdoor cat lifespans is driven largely by early mortality rather than a uniform decade-long difference.</p>
-<p class="meta"><a class="epic" href="../?tag=Rehistory" title="Every article tagged Rehistory">Rehistory</a> Published November 18, 2026 · 4 sources</p>
+<p class="meta"><a class="epic" href="../?tag=Everyday%20Systems" title="Every article tagged Everyday Systems">Everyday Systems</a> Published November 18, 2026 · 4 sources</p>
 <h2>What the Study Found</h2>
 <p>The largest single-institution necropsy study of cat mortality, published in PLOS One in 2022 by Kent et al., found that indoor cats live longer than outdoor cats on average, but the popular claim that indoor cats live 10 years longer than outdoor cats is overstated <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. Among cats that survived past their first year, indoor, indoor-outdoor, and outdoor cats had statistically indistinguishable median lifespans of approximately 10 years, with the indoor longevity advantage concentrated in the first year of life when outdoor cats face disproportionate mortality from trauma, disease, and predation <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>. The finding suggests that the indoor advantage is not a uniform decade-long gap but rather a survival benefit that matters most during the earliest and most vulnerable period of a cat's life <sup><a href="#src-1">[1]</a></sup><sup><a href="#src-2">[2]</a></sup>.</p>
 <h2>The Numbers Behind the Finding</h2>
@@ -100,7 +106,8 @@ html[data-theme="dark"] .theme-toggle .sun { display:block; }
 <li id="src-3" value="3"><span class="stance">supports</span><br><a href="https://www.petmd.com/cat/care/can-indoor-cat-be-part-time-outdoor-cat">Can an Indoor Cat Be a Part-Time Outdoor Cat? — PetMD</a><blockquote>An indoor cat may live 15-17 years, while the life expectancy for outdoor cats is only 2-5 years, according to researchers at University of California-Davis.</blockquote></li>
 <li id="src-4" value="4"><span class="stance">supports</span><br><a href="https://everycat.org/cat-health/demographics-life-and-death-of-cats-in-england/">Demographics - life and death of cats in England — EveryCat Health Foundation (O&#x27;Neill et al. 2015)</a><blockquote>Overall, the median longevity in all of the cats was 14 years.</blockquote></li>
 </ol>
-<p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. A human approved the research and reviewed this article before it was published.</p></article>
+<p class="note">Every source above was fetched and its quote matched against the page by code. Direct quotes and citations in the article were checked against those sources. A human approved the research and reviewed this article before it was published.</p>
+</article>
 <nav class="pager" data-slug="pt-cats" data-feed="../feed.json" aria-label="More articles"></nav><script>
 (function () {
   var nav = document.querySelector("nav.pager");

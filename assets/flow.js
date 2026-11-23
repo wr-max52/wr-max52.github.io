@@ -1,6 +1,7 @@
 /* The pipeline strip, kept live. Every two seconds it asks /api/flow what is happening and relights the
  * strip in place: the steps working right now (one per busy worker), the counts waiting at each human review
- * (none on the reviews auto mode does) and parked at each check, and the lines underneath. It relights the mission cards below the same way, one
+ * (none on the reviews auto mode does), parked at each check and held at each tile (missions there now), and the
+ * lines underneath. It relights the mission cards below the same way, one
  * per busy worker, so they never wait on the page's own refresh (which holds off while you type or chat).
  * It never reloads the page, so the pixel researchers on the strip keep walking. When a worker's step changes it fires a "flowchange" event on #flow saying which
  * worker and where its work went, which assets/researchers.js turns into that worker's researcher chasing
@@ -17,14 +18,28 @@ let root = null, timer = null, last = null, busy = false;
 // The strip never scrolls sideways: it shrinks (--s) to fit the panel, and when that would make its labels too
 // small to read it stacks instead (the .stack class): one column in flow order, each lane wrapping.
 const MIN_SCALE = 0.72, STACK_SCALE = 0.95;
+
+// How much too wide the strip is (1 = it fits): the whole track, and each lane against its own space. A lane can
+// run under the review beside it while staying inside the track, so each lane adds up what it holds: its tiles
+// and its arrows at their shortest (they only stretch while there is room).
+function tooWide(track) {
+  let need = track.scrollWidth / Math.max(track.clientWidth, 1);
+  track.querySelectorAll(":scope > .lane").forEach(lane => {
+    let w = 0;
+    lane.querySelectorAll(":scope > .unit > *, :scope > .join").forEach(c => { w += c.getBoundingClientRect().width; });
+    if (lane.clientWidth) need = Math.max(need, w / lane.clientWidth);
+  });
+  return need;
+}
+
 function fit() {
   const track = root && root.querySelector(".flow-track");
   if (!track) return;
   root.classList.remove("stack");
   track.style.setProperty("--s", "1");
   let s = 1;
-  for (let i = 0; i < 4 && track.scrollWidth > track.clientWidth + 1; i++) {   // borders don't scale, so refine
-    s *= track.clientWidth / track.scrollWidth;
+  for (let i = 0, need = tooWide(track); i < 6 && need > 1.002; i++, need = tooWide(track)) {   // borders don't scale, so refine
+    s /= need;
     if (s < MIN_SCALE) break;
     track.style.setProperty("--s", String(Math.floor(s * 1000) / 1000));
   }
@@ -95,6 +110,11 @@ function apply(d) {
     const n = d.parked[c.dataset.step] || 0, b = c.querySelector(".parked-count");
     if (b) { b.textContent = n; b.hidden = !n; b.title = ((window.I18N || {})["{n} parked here"] || "{n} parked here").replace("{n}", n); }
   });
+  const held = d.held || {}, heldTitle = (window.I18N || {})["Missions at this step: {n}"] || "Missions at this step: {n}";
+  root.querySelectorAll(".held").forEach(b => {
+    const n = held[b.parentElement.dataset.step] || 0;
+    b.textContent = n; b.hidden = !n; b.title = heldTitle.replace("{n}", n);
+  });
   relightCards(d.working);
   const now = root.querySelector(".now");
   if (now && now.dataset.html !== d.now) { now.innerHTML = d.now; now.dataset.html = d.now; }
@@ -139,7 +159,28 @@ function relightCards(working) {
     if (worker) card.dataset.worker = worker; else delete card.dataset.worker;
     changed = true;
   });
-  if (changed && window.Researchers) window.Researchers.rescan();
+  if (relightDesk(working) || changed) { if (window.Researchers) window.Researchers.rescan(); }
+}
+
+// The Inspiration box is the desk's card (ui.finder_panel): the Theorist and the mission finder work for the
+// whole desk (no slug), so it lights while either does, and its visitor does that agent's kind of work.
+const DESK = ["theorist", "finder"];
+function relightDesk(working) {
+  const box = document.querySelector("[data-desk]");
+  if (!box) return false;
+  const e = working.find(w => !w.slug && DESK.includes(w.step));
+  box.classList.toggle("active", !!e);
+  const hint = box.querySelector(".hint[data-idle]");
+  if (hint) {
+    const text = e ? `${e.name} working now` : hint.dataset.idle;
+    if (hint.textContent !== text) hint.textContent = text;
+  }
+  if (!box.hasAttribute("data-lab-ok")) return false;   // animations off: no visitors
+  const lab = e ? e.step : null, worker = e && e.worker !== "desk" ? e.worker.split("-")[0] : null;
+  if ((box.dataset.lab || null) === lab && (box.dataset.worker || null) === worker) return false;
+  if (lab) box.dataset.lab = lab; else delete box.dataset.lab;
+  if (worker) box.dataset.worker = worker; else delete box.dataset.worker;
+  return true;
 }
 
 function arrive(h) {
