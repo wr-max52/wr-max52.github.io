@@ -21,6 +21,8 @@
  * moves to another mission, or passes to the other worker, they say a closing line and walk off, and a new
  * one walks in for whatever started, at least 10 seconds after (GAP_MIN) and in its turn among the page's
  * arrivals. assets/flow.js says when that happens with a "flowchange" event.
+ * On the published About page the strip plays a scene instead (Tour, #139): one made-up mission carried from box
+ * to box by two researchers following a storyboard (TOUR), a third bringing it to Publish.
  * Purely decorative: canvases are aria-hidden, ignore the pointer, and nothing here talks to the server.
  */
 (() => {
@@ -112,6 +114,7 @@ const memory = {
 // ---------- the cast ----------
 
 const INK = "#1d1b22", MOUTH = "#7a3434", WHITE = "#ffffff", BLUSH = "#ff8f9e";
+const LINE = INK, LIPS = MOUTH;                  // drawFace swaps its own ink and mouth color for a cyborg's
 const SKIN = ["#ffe1c6", "#f5cba3", "#e8b38a", "#d49a6a", "#b97c4e", "#9a6038", "#7a4628", "#58321d"];
 const BOOKS = ["#d63a3a", "#1f8fc4", "#1fa67f", "#f0a030", "#a02c7a", "#5a55c8"];
 const NATURAL_HAIR = ["#17110e", "#2e1f17", "#4b3021", "#6e4527", "#93602f", "#c08d4a", "#a3a3a3"];
@@ -178,9 +181,17 @@ function makeLook(kind, seed) {
   const one = v => { const c = Array.isArray(v) ? pick(r, v) : v; return typeof c === "string" && c[0] === "#" ? vivid(c) : c; };
   const a = { kind, seed, name: (LINES.names || {})[kind] || t.name, fav: t.fav || {}, worker: t.worker };
   a.skin = vivid(SKIN[r() < 0.7 ? one(t.skin) : Math.floor(r() * SKIN.length)], 1.18);
+  const raw = v => Array.isArray(v) ? pick(r, v) : v;            // a metal or a light is used as given, never made more vivid
+  a.metal = raw(t.metal) || null; a.glow = raw(t.glow) || null;  // a cyborg: metal where skin would be, eyes that glow
+  if (a.metal) a.skin = a.metal;
   const deep = lum(a.skin) < 125;                                // darker skin: warmer shade, eyes that still read
   a.skinD = mix(shade(a.skin, 0.84), "#8a2f3c", 0.14); a.skinL = mix(a.skin, "#fff3dc", deep ? 0.3 : 0.45);
   a.cheek = mix(a.skin, "#ff5a6e", deep ? 0.2 : 0.28);
+  if (a.metal) {                                                 // metal shades cool and shines; a mouth is a seam in it
+    const black = lum(a.metal) < 60;
+    a.skinD = black ? shade(a.metal, 0.6) : shade(a.metal, 0.72); a.skinL = black ? mix(a.metal, "#aab4c8", 0.42) : mix(a.metal, "#ffffff", 0.5);
+    a.mouthC = black ? mix(a.metal, "#aab4c8", 0.6) : mix(shade(a.metal, 0.4), INK, 0.35);
+  }
   a.hair = one(t.hair) || "#17110e";
   const dark = lum(a.hair) < 48;                                 // black hair shines blue, the manga way
   a.hairD = dark ? shade(a.hair, 0.55) : shade(a.hair, 0.7); a.hairL = dark ? mix(a.hair, "#7f95d6", 0.42) : shade(a.hair, 1.32);
@@ -188,9 +199,10 @@ function makeLook(kind, seed) {
   a.eye = pick(r, IRIS); a.lash = !!t.lash; a.lids = !!t.lids; a.bushy = !!t.bushy; a.ahoge = !!t.ahoge;
   if (deep) a.eye = "#3a2114";                                   // dark eyes read best on dark skin
   a.eyeD = mix(a.eye, INK, deep ? 0.75 : 0.5); a.eyeW = deep ? a.skinL : "#ffffff"; a.lashC = INK;
+  if (a.glow) { a.eye = a.eyeD = a.glow; a.eyeW = mix(a.glow, "#ffffff", 0.65); a.lid = mix(shade(a.glow, 0.5), INK, 0.3); }   // lit all through, lids that still show on black
   a.brow = t.brow || "flat"; a.mouth = t.mouth || "none"; a.grin = !!t.grin;
   a.freckles = !!t.freckles; a.pencil = !!t.pencil; a.frame = one(t.frame) || INK;
-  a.rosy = a.worker !== "pi" || !!t.lash;                        // the young ones, and anyone with lashes, get rosy cheeks
+  a.rosy = !a.metal && (a.worker !== "pi" || !!t.lash);                       // the young ones, and anyone with lashes, get rosy cheeks
   a.nose = !!a.facial;                                           // a mustache needs a nose to sit under
   a.outfit = t.outfit;
   a.top = one(t.top) || "#7d8691"; a.topD = shade(a.top, 0.78);
@@ -209,7 +221,7 @@ function makeLook(kind, seed) {
   const over = { cap: a.cap, beanie: a.beanie, hardhat: "#e0a800", deerstalker: "#75512f", propeller: "#c79d0a" }[a.head] || a.hair;
   a.fringe = a.head ? 10 : { bob: 8, receding: 13, bigcurly: 9 }[a.style] || 9;
   a.browC = a.bushy ? a.hairL : mix(shade(a.hair, 0.6), a.skin, a.lash ? 0.4 : 0.22);
-  if (Math.abs(lum(a.browC) - lum(a.skin)) < 45) a.browC = deep ? "#120c0c" : shade(a.skin, 0.45);
+  if (Math.abs(lum(a.browC) - lum(a.skin)) < 45) a.browC = a.metal && lum(a.skin) < 60 ? a.skinL : deep ? "#120c0c" : shade(a.skin, 0.45);
   a.browHi = lum(over) < 42 ? mix(over, "#ffffff", 0.32) : shade(over, 0.5);
   a.prop = one(t.prop) || null;
   a.sleeve = { labcoat: a.coat, suit: a.top, hoodie: a.top, sweater: a.top, cardigan: a.top, jacket: a.top,
@@ -275,6 +287,8 @@ function art(P, a, rows, x0, yTop, pal) {
 }
 
 function drawLeg(P, a, cx, off, lift, L, back) {
+  const tap = lift === "tap";                                      // a foot tap: the heel stays down, only the toe comes up
+  if (tap) lift = 0;
   const lf = lift ? 2 : 0, foot = cx - 1 + off, sc = back ? a.shoesD : a.shoes, line = soft(a.shoes);
   const pc = back ? a.pantsD : a.pants, pl = soft(a.pants);
   if (lift && L > 9) {                                            // a step: the knee leads, the shin follows
@@ -283,27 +297,51 @@ function drawLeg(P, a, cx, off, lift, L, back) {
   } else limb(P, cx, L - 2, cx + off, lf + 4, 4, pc, pl);
   if (!back && !off && !lift && L > 9) P(cx + 1, 6, 1, L - 9, shade(a.pants, 1.22));   // light down the shin
   if (!back && a.legsStyle !== "skirt") P(cx + off - 1, lf + 4, 4, 1, a.pantsD);   // the hem over the shoe
+  const sole = a.sneaker ? (back ? "#c9ccd4" : "#ffffff") : shade(sc, 0.66);
+  if (tap) {
+    P(foot - 1, 0, 4, 4, line); P(foot + 3, 1, 4, 3, line); P(foot + 3, 4, 3, 1, line);
+    P(foot, 2, 3, 1, sc); P(foot, 1, 3, 1, sole); P(foot + 3, 3, 2, 1, sc); P(foot + 3, 2, 2, 1, sole);
+    return;
+  }
   P(foot - 1, lf, 7, 3, line); P(foot - 1, lf + 3, 6, 1, line);                    // a shoe with a rounded toe
-  P(foot, lf + 2, 5, 1, sc); P(foot, lf + 1, 5, 1, a.sneaker ? (back ? "#c9ccd4" : "#ffffff") : shade(sc, 0.66));
+  P(foot, lf + 2, 5, 1, sc); P(foot, lf + 1, 5, 1, sole);
   if (a.sneaker) P(foot + 1, lf + 2, 2, 1, shade(sc, 0.8));                        // laces side
   else P(foot + 3, lf + 2, 1, 1, shade(sc, 1.45));                                 // a shine on the toe
 }
 
+// The body is seen three-quarters on, like the head: the near shoulder sits toward the back of the torso and its
+// arm hangs across it; the far shoulder is at the chest's front edge, so that arm only shows past the chest.
+// Both hands aim at the same places in front of the body, and every arm has one length (ARM_UP + ARM_FORE): a
+// target out of reach is pulled in along its line, and the elbow goes wherever those two lengths put it.
+const ARM_UP = 5, ARM_FORE = 6;
+const shoulderOf = (g, back) => [back ? g.tr - 1 : g.tl + 3, g.sh - 1];
+function reach(sx, sy, hx, hy, fwd) {
+  let dx = hx - sx, dy = hy - sy, d = Math.hypot(dx, dy);
+  if (d < 0.5) { dx = 0; dy = -1; d = 1; }                         // a hand on its own shoulder: fold the arm down
+  const max = ARM_UP + ARM_FORE - 0.3, min = ARM_FORE - ARM_UP + 1.5, k = clamp(d, min, max) / d;
+  dx *= k; dy *= k; d *= k;
+  const along = (ARM_UP * ARM_UP - ARM_FORE * ARM_FORE + d * d) / (2 * d), out = Math.sqrt(Math.max(0, ARM_UP * ARM_UP - along * along));
+  const mx = sx + dx / d * along, my = sy + dy / d * along, px = -dy / d * out, py = dx / d * out;
+  // the elbow hangs down and back, as elbows do; a far arm held up bends out in front instead
+  const side = (px * 1.5 + py < 0) !== !!fwd ? 1 : -1;
+  return [[Math.round(mx + side * px), Math.round(my + side * py)], [Math.round(sx + dx), Math.round(sy + dy)]];
+}
 function drawArm(P, a, spec, g, back) {
   const [mode, v = 0] = spec || ["swing", 0];
-  const ax = back ? g.tl - 1 : g.tr, sy = g.sh - 1;
-  const d = back ? -1 : 1;
-  let elbow, hand;
+  const [ax, sy] = shoulderOf(g, back), fx = g.tr;                // fx: the chest's front edge
+  let to, fwd = false;
   switch (mode) {
-    case "forward": elbow = [ax, sy - 5]; hand = [ax + 6 + v, sy - 6]; break;
-    case "high":    elbow = [ax + 1, sy - 5]; hand = [ax + 5 + v, sy]; break;
-    case "low":     elbow = [ax + 1, sy - 5]; hand = [ax + 6 + v, sy - 10]; break;
-    case "up":      elbow = [ax + 3 * d, sy + 5]; hand = [ax + (4 + v) * d, g.top + 1]; break;
-    case "head":    elbow = [ax + 5, sy + 6]; hand = [ax + 1, g.top - 1 + v]; break;
-    case "mouth":   elbow = [ax + 1, sy - 5]; hand = [ax + 3 + v, g.head + 2]; break;
-    case "face":    elbow = [ax + 2, sy - 4]; hand = [ax + 3 + v, g.head + 6]; break;   // a hand up at the glasses
-    default:        elbow = [ax + Math.round(v / 2), sy - 6]; hand = [ax + v, sy - a.torso + 3];
+    case "forward": to = [fx + 5 + v, sy - 5]; break;
+    case "high":    to = [fx + 4 + v, sy - 1]; break;
+    case "low":     to = [fx + 4 + v, sy - 9]; break;
+    case "up":      to = back ? [fx + 6 + v, sy + 8] : [g.tl - 6 - v, sy + 8]; fwd = back; break;   // a Y, clear of the head
+    case "at":      to = [v[0], sy + v[1]]; break;                  // a bit's own spot: x from the middle, y from the shoulder
+    case "head":    to = [g.tl - 1, g.head + 7 + v]; break;         // a hand at the back of the head
+    case "mouth":   to = [fx + v, g.head + 2]; break;
+    case "face":    to = [fx + 2 + v, g.head + 5]; break;           // a hand up at the glasses
+    default:        to = [ax + v, sy - 10];
   }
+  const [elbow, hand] = reach(ax, sy, to[0], to[1], fwd);
   const sleeve = back ? a.sleeveD : a.sleeve, skin = back ? a.skinD : a.skin, line = soft(a.sleeve), bare = soft(a.skin);
   limb(P, ax, sy, elbow[0], elbow[1], 3, sleeve, line);
   limb(P, elbow[0], elbow[1], hand[0], hand[1], 3, a.short ? skin : sleeve, a.short ? bare : line);
@@ -322,7 +360,7 @@ function drawArm(P, a, spec, g, back) {
 }
 
 function drawTorso(P, a, g) {
-  const { tl, tr, hip, sh } = g, W = tr - tl + 1, T = sh - hip + 1;
+  const { tl, tr, hip, sh } = g, W = tr - tl + 1, T = sh - hip + 1, CX = 1;
   // The body of a garment `drop` pixels longer than the hips: the far side in shade, a soft line where it meets
   // the far arm and the legs. The silhouette pass draws the dark outline, so nothing here is boxed in ink.
   const shell = (c, drop = 0, cd = shade(c, 0.8)) => {
@@ -334,99 +372,99 @@ function drawTorso(P, a, g) {
     P(tl + 3, sh, W - 5, 1, shade(c, 1.2)); P(tl + 3, sh - 1, 1, 1, shade(c, 1.2));   // light on the shoulders
     return b;
   };
-  // The chest is drawn a pixel back from the middle: the front arm hides the front edge of the torso.
+  // The chest's middle line (CX) sits a pixel toward the front, as the face does: the near arm hangs over the back of the torso.
   // An open collar: `col` shows in a V that narrows over `depth` rows, edged with `edge` (lapels).
   const vneck = (col, depth, edge) => {
     for (let i = 0; i < depth; i++) {
       const w = Math.max(0, 2 - (i >> 1));
-      P(-w - 1, sh - i, 2 * w + 1, 1, col);
-      if (edge) { P(-w - 2, sh - i, 1, 1, edge); P(w, sh - i, 1, 1, edge); }
+      P(CX - w, sh - i, 2 * w + 1, 1, col);
+      if (edge) { P(CX - w - 1, sh - i, 1, 1, edge); P(CX + w + 1, sh - i, 1, 1, edge); }
     }
   };
-  const tie = (c, len) => { P(-1, sh - len, 1, len, c); P(-2, sh - 1, 3, 1, c); P(-1, sh - 1, 1, 1, shade(c, 0.72)); P(-1, sh - 3, 1, 1, shade(c, 1.25)); };
+  const tie = (c, len) => { P(CX, sh - len, 1, len, c); P(CX - 1, sh - 1, 3, 1, c); P(CX, sh - 1, 1, 1, shade(c, 0.72)); P(CX, sh - 3, 1, 1, shade(c, 1.25)); };
   const strap = () => { if (a.pack) { P(tr - 4, hip + 2, 2, T - 2, shade(a.pack, 0.9)); P(tr - 4, hip + 2, 1, T - 2, shade(a.pack, 0.68)); P(tr - 4, sh - 4, 2, 1, "#d8b36a"); } };
   switch (a.outfit) {
     case "labcoat": {
       const c = a.coat, cd = a.coatD, b = shell(c, 5, cd), line = soft(c);
-      P(0 - 1, b, 1, 5, line); P(1 - 1, b, 1, 1, a.pantsD);               // the coat parts over the knees
+      P(0 + CX, b, 1, 5, line); P(1 + CX, b, 1, 1, a.pantsD);               // the coat parts over the knees
       if (g.stride) { P(tl - 1, b, 1, 4, cd); P(tl - 2, b, 1, 2, cd); }   // and its tails fly out behind on a stride
-      P(0 - 1, hip + 1, 1, T - 6, cd);                                // buttoned up the middle
-      P(1 - 1, hip + 1, 1, 1, "#9aa3b2"); P(1 - 1, hip + 4, 1, 1, "#9aa3b2");
+      P(0 + CX, hip + 1, 1, T - 6, cd);                                // buttoned up the middle
+      P(1 + CX, hip + 1, 1, 1, "#9aa3b2"); P(1 + CX, hip + 4, 1, 1, "#9aa3b2");
       vneck(a.shirt, 6, cd);
-      P(-2 - 1, sh, 1, 1, shade(a.shirt, 1.25)); P(2 - 1, sh, 1, 1, shade(a.shirt, 1.25));   // collar points
+      P(-2 + CX, sh, 1, 1, shade(a.shirt, 1.25)); P(2 + CX, sh, 1, 1, shade(a.shirt, 1.25));   // collar points
       if (a.tie) tie(a.tie, 5);
       if (a.bow) {                                                // a proper bow tie: two wings and a knot
         const w = a.bow;
-        P(-3 - 1, sh - 2, 2, 3, w); P(2 - 1, sh - 2, 2, 3, w); P(-1 - 1, sh - 1, 3, 1, w);
-        P(0 - 1, sh - 1, 1, 1, shade(w, 0.62)); P(-3 - 1, sh, 1, 1, shade(w, 1.35)); P(2 - 1, sh, 1, 1, shade(w, 1.35));
-        P(-3 - 1, sh - 2, 1, 1, shade(w, 0.72)); P(3 - 1, sh - 2, 1, 1, shade(w, 0.72));
+        P(-3 + CX, sh - 2, 2, 3, w); P(2 + CX, sh - 2, 2, 3, w); P(-1 + CX, sh - 1, 3, 1, w);
+        P(0 + CX, sh - 1, 1, 1, shade(w, 0.62)); P(-3 + CX, sh, 1, 1, shade(w, 1.35)); P(2 + CX, sh, 1, 1, shade(w, 1.35));
+        P(-3 + CX, sh - 2, 1, 1, shade(w, 0.72)); P(3 + CX, sh - 2, 1, 1, shade(w, 0.72));
       }
-      P(-5 - 1, sh - 5, 3, 1, cd); P(-5 - 1, sh - 4, 1, 2, "#2e6fd8"); P(-4 - 1, sh - 4, 1, 1, "#e03131");   // pens in the breast pocket
-      P(-5 - 1, hip - 2, 3, 1, cd);                                   // a hip pocket
+      P(-5 + CX, sh - 5, 3, 1, cd); P(-5 + CX, sh - 4, 1, 2, "#2e6fd8"); P(-4 + CX, sh - 4, 1, 1, "#e03131");   // pens in the breast pocket
+      P(-5 + CX, hip - 2, 3, 1, cd);                                   // a hip pocket
       P(tl + 3, sh - 1, 1, 1, shade(c, 1.2));
       break;
     }
     case "suit": {
       const c = a.top, cd = a.topD, cl = shade(c, 1.28), b = shell(c, 2, cd);
-      P(0 - 1, b, 1, 2, soft(c));                                     // the vent
-      P(0 - 1, hip + 1, 1, T - 7, cd); P(1 - 1, hip + 2, 1, 1, cl); P(1 - 1, hip, 1, 1, cl);   // two buttons
+      P(0 + CX, b, 1, 2, soft(c));                                     // the vent
+      P(0 + CX, hip + 1, 1, T - 7, cd); P(1 + CX, hip + 2, 1, 1, cl); P(1 + CX, hip, 1, 1, cl);   // two buttons
       vneck("#f6f6f6", 7, cd);
-      P(-3 - 1, sh - 1, 1, 2, cl); P(3 - 1, sh - 1, 1, 2, cl); P(-2 - 1, sh - 3, 1, 2, cl); P(2 - 1, sh - 3, 1, 2, cl);   // lapels catch the light
-      P(-4 - 1, sh, 1, 1, cd); P(4 - 1, sh - 2, 1, 1, cd);                // and their notches
+      P(-3 + CX, sh - 1, 1, 2, cl); P(3 + CX, sh - 1, 1, 2, cl); P(-2 + CX, sh - 3, 1, 2, cl); P(2 + CX, sh - 3, 1, 2, cl);   // lapels catch the light
+      P(-4 + CX, sh, 1, 1, cd); P(4 + CX, sh - 2, 1, 1, cd);                // and their notches
       tie(a.tie || "#c0392b", 6);
-      P(-2 - 1, sh, 1, 1, "#ffffff"); P(2 - 1, sh, 1, 1, "#ffffff");
-      P(-5 - 1, sh - 4, 2, 1, a.tie === "#e8e8e8" ? "#c0392b" : "#f6f6f6"); P(-5 - 1, sh - 5, 2, 1, cd);   // pocket square
+      P(-2 + CX, sh, 1, 1, "#ffffff"); P(2 + CX, sh, 1, 1, "#ffffff");
+      P(-5 + CX, sh - 4, 2, 1, a.tie === "#e8e8e8" ? "#c0392b" : "#f6f6f6"); P(-5 + CX, sh - 5, 2, 1, cd);   // pocket square
       break;
     }
     case "hoodie": {
       const c = a.top, cd = a.topD, cl = shade(c, 1.2);
       shell(c, 0, cd);
       P(tl + 1, hip, W - 1, 2, cd); for (let x = tl + 2; x < tr; x += 2) P(x - 1, hip, 1, 2, shade(c, 0.68));   // ribbed hem
-      P(-4 - 1, hip + 3, 8, 3, cd); P(-4 - 1, hip + 5, 1, 1, c); P(3 - 1, hip + 5, 1, 1, c); P(-3 - 1, hip + 3, 6, 1, shade(c, 0.68));   // kangaroo pocket
-      P(-3 - 1, sh, 7, 1, cd); P(-2 - 1, sh - 1, 5, 1, cd); P(-1 - 1, sh, 3, 1, shade(c, 0.62));   // the hood's opening round the neck
-      P(-1 - 1, sh - 5, 1, 4, "#f1f1f1"); P(2 - 1, sh - 4, 1, 3, "#f1f1f1"); P(-1 - 1, sh - 6, 1, 1, "#aab0ba"); P(2 - 1, sh - 5, 1, 1, "#aab0ba");   // drawstrings
+      P(-4 + CX, hip + 3, 8, 3, cd); P(-4 + CX, hip + 5, 1, 1, c); P(3 + CX, hip + 5, 1, 1, c); P(-3 + CX, hip + 3, 6, 1, shade(c, 0.68));   // kangaroo pocket
+      P(-3 + CX, sh, 7, 1, cd); P(-2 + CX, sh - 1, 5, 1, cd); P(-1 + CX, sh, 3, 1, shade(c, 0.62));   // the hood's opening round the neck
+      P(-1 + CX, sh - 5, 1, 4, "#f1f1f1"); P(2 + CX, sh - 4, 1, 3, "#f1f1f1"); P(-1 + CX, sh - 6, 1, 1, "#aab0ba"); P(2 + CX, sh - 5, 1, 1, "#aab0ba");   // drawstrings
       P(tl + 3, sh - 2, 1, 2, cl);
       break;
     }
     case "cardigan": {
       const c = a.top, cd = a.topD, b = shell(c, 1, cd), gold = "#e0b64a";
-      P(-1 - 1, b, 3, sh - b, a.shirt); P(-2 - 1, sh - 2, 5, 3, a.shirt); P(-1 - 1, b, 1, sh - b - 2, a.shirtD);   // the blouse
-      P(-2 - 1, b, 1, sh - b - 2, cd); P(2 - 1, b, 1, sh - b - 2, cd); P(-3 - 1, sh - 2, 1, 2, cd); P(3 - 1, sh - 2, 1, 2, cd);   // the knit's edges
-      for (let y = hip + 1; y < sh - 3; y += 3) P(2 - 1, y, 1, 1, gold);                 // buttons
-      P(-5 - 1, hip, 3, 1, cd); P(-5 - 1, hip + 1, 3, 1, shade(c, 1.15));                    // a pocket
+      P(-1 + CX, b, 3, sh - b, a.shirt); P(-2 + CX, sh - 2, 5, 3, a.shirt); P(-1 + CX, b, 1, sh - b - 2, a.shirtD);   // the blouse
+      P(-2 + CX, b, 1, sh - b - 2, cd); P(2 + CX, b, 1, sh - b - 2, cd); P(-3 + CX, sh - 2, 1, 2, cd); P(3 + CX, sh - 2, 1, 2, cd);   // the knit's edges
+      for (let y = hip + 1; y < sh - 3; y += 3) P(2 + CX, y, 1, 1, gold);                 // buttons
+      P(-5 + CX, hip, 3, 1, cd); P(-5 + CX, hip + 1, 3, 1, shade(c, 1.15));                    // a pocket
       for (let x = tl + 3; x <= tr; x += 2) if (Math.abs(x) > 2) P(x - 1, b, 1, 1, shade(c, 0.66));   // ribbing at the hem
-      P(-1 - 1, sh, 3, 1, "#f3ead8"); P(0 - 1, sh - 1, 1, 1, "#f3ead8");                     // a string of pearls
-      P(-4 - 1, sh - 3, 1, 1, gold); P(-5 - 1, sh - 3, 1, 1, "#f6dc8c"); P(-4 - 1, sh - 4, 1, 1, "#c2543c");   // a little brooch
+      P(-1 + CX, sh, 3, 1, "#f3ead8"); P(0 + CX, sh - 1, 1, 1, "#f3ead8");                     // a string of pearls
+      P(-4 + CX, sh - 3, 1, 1, gold); P(-5 + CX, sh - 3, 1, 1, "#f6dc8c"); P(-4 + CX, sh - 4, 1, 1, "#c2543c");   // a little brooch
       break;
     }
     case "vest": {
       shell(a.shirt, 0, a.shirtD);
-      P(tl + 1, hip, W - 2, T - 2, "#ff8a1a"); P(tl + 1, hip, 2, T - 2, "#e5741a"); P(0 - 1, hip, 1, T - 2, "#c85f10");
-      P(tl + 1, hip + 3, W - 2, 2, "#ffe14d"); P(-4 - 1, hip + 5, 2, T - 7, "#ffe14d"); P(2 - 1, hip + 5, 2, T - 7, "#ffe14d");
+      P(tl + 1, hip, W - 2, T - 2, "#ff8a1a"); P(tl + 1, hip, 2, T - 2, "#e5741a"); P(0 + CX, hip, 1, T - 2, "#c85f10");
+      P(tl + 1, hip + 3, W - 2, 2, "#ffe14d"); P(-4 + CX, hip + 5, 2, T - 7, "#ffe14d"); P(2 + CX, hip + 5, 2, T - 7, "#ffe14d");
       P(tl + 1, hip + 3, W - 2, 1, "#e8c93a");
-      P(-1 - 1, sh, 3, 1, a.shirtD);
+      P(-1 + CX, sh, 3, 1, a.shirtD);
       break;
     }
     case "overalls": {                                             // a shirt under a denim bib and straps
       const bib = T - 5, d = a.pants, dd = a.pantsD, stitch = shade(d, 1.35), brass = "#e0b64a";
       shell(a.shirt, 0, a.shirtD);
       P(tl + 1, hip, W - 1, 3, d); P(tl + 1, hip, 2, 3, dd);                        // the waist
-      P(-4 - 1, hip, 8, bib, d); P(-4 - 1, hip, 1, bib, dd);                                // the bib
-      P(-4 - 1, hip + bib, 2, 5, d); P(2 - 1, hip + bib, 2, 5, d); P(-4 - 1, hip + bib, 1, 5, dd);   // straps
-      P(-4 - 1, hip + bib - 1, 2, 2, brass); P(2 - 1, hip + bib - 1, 2, 2, brass); P(-4 - 1, hip + bib - 1, 1, 1, "#a8842c"); P(2 - 1, hip + bib - 1, 1, 1, "#a8842c");   // brass clasps
-      P(-2 - 1, hip + 3, 4, 3, dd); P(-2 - 1, hip + 5, 4, 1, stitch); P(1 - 1, hip + 4, 1, 1, brass);   // the bib pocket, a stitched top and a rivet
-      P(-4 - 1, hip + 2, 8, 1, stitch);                                                 // a seam at the waist
-      P(-2 - 1, sh, 5, 1, a.shirtD); P(-1 - 1, sh, 3, 1, shade(a.shirt, 1.15));             // collar
+      P(-4 + CX, hip, 8, bib, d); P(-4 + CX, hip, 1, bib, dd);                                // the bib
+      P(-4 + CX, hip + bib, 2, 5, d); P(2 + CX, hip + bib, 2, 5, d); P(-4 + CX, hip + bib, 1, 5, dd);   // straps
+      P(-4 + CX, hip + bib - 1, 2, 2, brass); P(2 + CX, hip + bib - 1, 2, 2, brass); P(-4 + CX, hip + bib - 1, 1, 1, "#a8842c"); P(2 + CX, hip + bib - 1, 1, 1, "#a8842c");   // brass clasps
+      P(-2 + CX, hip + 3, 4, 3, dd); P(-2 + CX, hip + 5, 4, 1, stitch); P(1 + CX, hip + 4, 1, 1, brass);   // the bib pocket, a stitched top and a rivet
+      P(-4 + CX, hip + 2, 8, 1, stitch);                                                 // a seam at the waist
+      P(-2 + CX, sh, 5, 1, a.shirtD); P(-1 + CX, sh, 3, 1, shade(a.shirt, 1.15));             // collar
       break;
     }
     case "jacket": {
       const c = a.top, cd = a.topD, cl = shade(c, 1.22);
       shell(c, 0, cd);
       P(tl + 1, hip, W - 1, 1, shade(c, 0.66));                                     // the waistband
-      P(0 - 1, hip + 1, 1, T - 2, "#c3c8d0"); P(0 - 1, sh - 3, 1, 2, "#eef0f3"); P(1 - 1, hip + 1, 1, T - 4, cd);   // zip and its pull
-      P(-3 - 1, sh - 1, 3, 2, cl); P(1 - 1, sh - 1, 3, 2, cl); P(-3 - 1, sh - 1, 1, 1, cd); P(3 - 1, sh - 1, 1, 1, cd);   // collar, turned out
-      P(-1 - 1, sh, 2, 1, a.shirt);
-      P(-5 - 1, hip + 3, 3, 1, cd); P(-5 - 1, hip + 2, 3, 1, cl);                           // a pocket flap
+      P(0 + CX, hip + 1, 1, T - 2, "#c3c8d0"); P(0 + CX, sh - 3, 1, 2, "#eef0f3"); P(1 + CX, hip + 1, 1, T - 4, cd);   // zip and its pull
+      P(-3 + CX, sh - 1, 3, 2, cl); P(1 + CX, sh - 1, 3, 2, cl); P(-3 + CX, sh - 1, 1, 1, cd); P(3 + CX, sh - 1, 1, 1, cd);   // collar, turned out
+      P(-1 + CX, sh, 2, 1, a.shirt);
+      P(-5 + CX, hip + 3, 3, 1, cd); P(-5 + CX, hip + 2, 3, 1, cl);                           // a pocket flap
       strap();
       break;
     }
@@ -444,24 +482,24 @@ function drawTorso(P, a, g) {
     }
     case "trench": {
       const c = a.top, cd = a.topD, cl = shade(c, 1.2), b = shell(c, 6, cd), leather = "#5a3d24";
-      P(0 - 1, b, 1, 6, soft(c));                                     // the back vent shows between the knees
+      P(0 + CX, b, 1, 6, soft(c));                                     // the back vent shows between the knees
       if (g.stride) { P(tl - 1, b, 1, 5, cd); P(tl - 2, b, 1, 2, cd); }   // the coat swings on a stride
-      P(1 - 1, hip + 2, 1, T - 4, cd);                                // double-breasted: the front laps over
-      for (const y of [hip + 3, hip + 6]) { P(-2 - 1, y, 1, 1, leather); P(3 - 1, y, 1, 1, leather); }
-      P(-1 - 1, sh - 3, 3, 4, a.shirt); P(0 - 1, sh - 3, 1, 3, a.shirtD);
-      P(-3 - 1, sh - 3, 2, 3, cl); P(2 - 1, sh - 3, 2, 3, cl); P(-2 - 1, sh - 4, 2, 1, cl); P(1 - 1, sh - 4, 2, 1, cl); P(-3 - 1, sh - 3, 1, 1, cd); P(3 - 1, sh - 3, 1, 1, cd);   // wide lapels
-      P(-4 - 1, sh, 3, 3, c); P(-4 - 1, sh, 1, 3, cd); P(2 - 1, sh, 3, 3, c); P(4 - 1, sh + 2, 1, 1, cl);   // the collar, turned up
-      P(tl + 1, hip, W - 1, 2, leather); P(tl + 1, hip, W - 1, 1, shade(leather, 0.7)); P(0 - 1, hip, 2, 2, "#e0b64a"); P(1 - 1, hip + 1, 1, 1, "#fff0b8");   // belt and buckle
-      P(-2 - 1, hip - 2, 1, 3, leather);                              // the belt's loose end
+      P(1 + CX, hip + 2, 1, T - 4, cd);                                // double-breasted: the front laps over
+      for (const y of [hip + 3, hip + 6]) { P(-2 + CX, y, 1, 1, leather); P(3 + CX, y, 1, 1, leather); }
+      P(-1 + CX, sh - 3, 3, 4, a.shirt); P(0 + CX, sh - 3, 1, 3, a.shirtD);
+      P(-3 + CX, sh - 3, 2, 3, cl); P(2 + CX, sh - 3, 2, 3, cl); P(-2 + CX, sh - 4, 2, 1, cl); P(1 + CX, sh - 4, 2, 1, cl); P(-3 + CX, sh - 3, 1, 1, cd); P(3 + CX, sh - 3, 1, 1, cd);   // wide lapels
+      P(-4 + CX, sh, 3, 3, c); P(-4 + CX, sh, 1, 3, cd); P(2 + CX, sh, 3, 3, c); P(4 + CX, sh + 2, 1, 1, cl);   // the collar, turned up
+      P(tl + 1, hip, W - 1, 2, leather); P(tl + 1, hip, W - 1, 1, shade(leather, 0.7)); P(0 + CX, hip, 2, 2, "#e0b64a"); P(1 + CX, hip + 1, 1, 1, "#fff0b8");   // belt and buckle
+      P(-2 + CX, hip - 2, 1, 3, leather);                              // the belt's loose end
       P(tl + 1, sh - 1, 3, 1, cd); P(tl + 3, sh - 1, 1, 1, "#e0b64a");   // an epaulette
       break;
     }
     case "tshirt": {
       const c = a.top, cd = a.topD, bolt = "#ffe066";
       shell(c, 0, cd);
-      P(-2 - 1, sh, 5, 1, cd); P(-1 - 1, sh, 3, 1, a.skinD);              // the neck band
-      P(1 - 1, hip + 9, 2, 1, bolt); P(0 - 1, hip + 8, 2, 1, bolt); P(-1 - 1, hip + 7, 4, 1, bolt); P(1 - 1, hip + 6, 2, 1, bolt); P(0 - 1, hip + 5, 2, 1, bolt); P(0 - 1, hip + 4, 1, 1, bolt);   // a lightning bolt
-      P(2 - 1, hip + 7, 1, 1, "#fff6c2");
+      P(-2 + CX, sh, 5, 1, cd); P(-1 + CX, sh, 3, 1, a.skinD);              // the neck band
+      P(1 + CX, hip + 9, 2, 1, bolt); P(0 + CX, hip + 8, 2, 1, bolt); P(-1 + CX, hip + 7, 4, 1, bolt); P(1 + CX, hip + 6, 2, 1, bolt); P(0 + CX, hip + 5, 2, 1, bolt); P(0 + CX, hip + 4, 1, 1, bolt);   // a lightning bolt
+      P(2 + CX, hip + 7, 1, 1, "#fff6c2");
       P(tl + 3, hip + 1, W - 4, 1, shade(c, 1.12));
       break;
     }
@@ -470,8 +508,8 @@ function drawTorso(P, a, g) {
       shell(c, 0, cd);
       P(tl + 1, hip, W - 1, 2, cd); for (let x = tl + 2; x < tr; x += 2) P(x - 1, hip, 1, 2, shade(c, 0.66));   // ribbed hem
       P(tl + 3, sh - 5, W - 3, 2, cl); P(tl + 3, sh - 5, W - 3, 1, shade(cl, 0.9)); P(tl + 1, sh - 5, 2, 2, shade(cl, 0.8));   // a stripe across the chest
-      P(-3 - 1, sh, 7, 1, cd); P(-1 - 1, sh, 3, 1, a.skinD);              // crew neck
-      P(-2 - 1, sh - 1, 1, 1, "#f6f6f6"); P(1 - 1, sh - 1, 1, 1, "#f6f6f6");   // collar points
+      P(-3 + CX, sh, 7, 1, cd); P(-1 + CX, sh, 3, 1, a.skinD);              // crew neck
+      P(-2 + CX, sh - 1, 1, 1, "#f6f6f6"); P(1 + CX, sh - 1, 1, 1, "#f6f6f6");   // collar points
       strap();
     }
   }
@@ -517,6 +555,10 @@ function drawHead(P, a, g, p, t) {
   P(-5, y + 3, 12, 7, a.skin); P(-4, y + 2, 10, 1, a.skin); P(-2, y + 1, 7, 1, a.skin); P(-4, y + 10, 10, 1, a.skin); P(-3, y + 11, 8, 1, a.skin);
   if (hair.bald && !hat) { P(-1, y + 12, 4, 1, a.skin); P(-1, y + 11, 5, 1, a.skinL); P(0, y + 12, 2, 1, a.skinL); P(3, y + 10, 2, 1, a.skinL); }
   if (!veil) { P(-5, y + 3, 1, 7, a.skinD); P(-4, y + 2, 2, 1, a.skinD); P(-4, y + 3, 1, 2, a.skinD); P(-2, y + 1, 2, 1, a.skinD); }
+  if (a.metal) {                                                 // plate: a seam behind the face, a rivet on the jaw, a shine on the brow
+    if (!veil) { P(-2, y + 2, 1, 8, a.skinD); P(-4, y + 2, 1, 1, a.skinL); P(-4, y + 8, 1, 1, a.skinL); }
+    P(5, y + 10, 2, 1, a.skinL); P(6, y + 9, 1, 1, a.skinL); P(-1, y + 1, 5, 1, a.skinD);
+  }
   if (veil) art(P, a, HIJAB, -8, y + 14, a.veilPal);
   drawFace(P, a, y, eyes, mouth, p);
   if (!veil) {
@@ -534,7 +576,7 @@ function drawHead(P, a, g, p, t) {
 
 // Eyes are at x 0 and x 4, three rows tall; the mouth sits between and below them.
 function drawFace(P, a, y, eyes, mouth, p) {
-  const e = a.eye, ed = a.eyeD, small = a.face === "round" || a.face === "browline";
+  const e = a.eye, ed = a.eyeD, INK = a.lid || LINE, MOUTH = a.mouthC || LIPS, WHITE = a.glow ? a.eyeW : "#ffffff", small = a.face === "round" || a.face === "browline";
   for (const front of [false, true]) {
     const ex = front ? 4 : 0, out = front ? ex + 2 : ex - 1;
     switch (eyes) {
@@ -558,7 +600,7 @@ function drawFace(P, a, y, eyes, mouth, p) {
   const lip = mix(a.skin, MOUTH, 0.5), line = mix(a.skin, MOUTH, 0.75);
   switch (mouth) {
     case "smile": P(2, y + 3, 1, 1, line); P(3, y + 2, 2, 1, MOUTH); P(5, y + 3, 1, 1, line); break;
-    case "grin": P(2, y + 2, 4, 1, MOUTH); P(3, y + 1, 2, 1, MOUTH); P(3, y + 2, 2, 1, WHITE); break;   // open, teeth showing
+    case "grin": P(2, y + 2, 4, 1, MOUTH); P(3, y + 1, 2, 1, MOUTH); P(3, y + 2, 2, 1, "#ffffff"); break;   // open, teeth showing
     case "o": P(3, y + 1, 2, 2, MOUTH); break;
     case "flat": P(2, y + 2, 3, 1, MOUTH); break;
     case "smirk": P(3, y + 2, 2, 1, MOUTH); P(5, y + 3, 1, 1, line); break;
@@ -910,13 +952,13 @@ function drawBody(P, a, p, t) {
   drawMaps(P, a, g, "back", t);
   if (p.sit) {                                    // on the floor, knees up a little
     const kx = Math.round(a.legs * 0.55), fx = Math.round(a.legs * 0.85);
-    const line = soft(a.pants);
-    box(P, tl + 1, 1, 6, 4, a.pantsD, line);
-    limb(P, kx, 6, fx, 3, 4, a.pants, line); limb(P, 0, 3, kx, 6, 4, a.pants, line);
+    const line = soft(a.pants), skirt = a.legsStyle === "skirt";   // a skirt stays on, over the lap
+    box(P, tl + 1, 1, 6, 4, skirt ? shade(a.skirt, 0.76) : a.pantsD, skirt ? soft(a.skirt) : line);
+    limb(P, kx, 6, fx, 3, 4, a.pants, line); limb(P, 0, 3, kx, 6, 4, skirt ? a.skirt : a.pants, skirt ? soft(a.skirt) : line);
     pill(P, fx - 1, 1, 5, 2, a.shoes, soft(a.shoes)); P(fx - 1, 1, 5, 1, a.sneaker ? "#ffffff" : shade(a.shoes, 0.66));
   } else {
-    drawLeg(P, a, -3, p.legB || 0, p.liftB, L, true);
-    drawLeg(P, a, 1, p.legF || 0, p.liftF, L, false);
+    drawLeg(P, a, 1, p.legB || 0, p.liftB, L, true);               // the far leg is the one in front: see drawArm
+    drawLeg(P, a, -3, p.legF || 0, p.liftF, L, false);
   }
   if (a.legsStyle === "skirt" && !p.sit) drawSkirt(P, a, g);
   drawTorso(P, a, g);
@@ -1601,7 +1643,7 @@ const ACTIONS = {
       }
       if (s.turn > 0 && s.t > s.turn) { r.face *= -1; s.turn = -1; }
       if (s.t >= s.dur) s.done = true;
-      return stand({ carry: true, liftF: s.tap && Math.floor(s.t * 3) % 2 ? 1 : 0, bob: breath(r, s.t) });
+      return stand({ carry: true, liftF: s.tap && Math.floor(s.t * 3) % 2 ? "tap" : 0, bob: breath(r, s.t) });
     },
   },
   idle: {
@@ -1609,7 +1651,7 @@ const ACTIONS = {
     run(r, s) {
       if (s.turn > 0 && s.t > s.turn) { r.face *= -1; s.turn = -1; }
       if (s.t >= s.dur) s.done = true;
-      return stand({ carry: true, liftF: s.tap && Math.floor(s.t * 4) % 2 ? 1 : 0, bob: breath(r, s.t) });
+      return stand({ carry: true, liftF: s.tap && Math.floor(s.t * 4) % 2 ? "tap" : 0, bob: breath(r, s.t) });
     },
   },
   read: {
@@ -1645,8 +1687,8 @@ const ACTIONS = {
       const walk = moving && !end ? walkPose(r, s.dist || 0) : {};
       if (s.sniff) return stand(Object.assign({}, walk, { crouch: 2, nod: 1, eyes: "closed", armF: ["low", 0], armB: ["low", 0] }));
       return stand(Object.assign({}, walk, {
-        crouch: 1, armF: end && s.found ? ["up", 0] : ["low", 0], eyes: "down",
-        props: (P, g) => end && s.found ? propPaper(P, g.handF[0] - 2, g.handF[1] + 1)
+        crouch: 1, armF: end && s.found ? ["swing", 0] : ["low", 0], armB: end && s.found ? ["up", 0] : ["swing", 0], gripB: end && s.found, eyes: "down",
+        props: (P, g) => end && s.found ? propPaper(P, g.handB[0] - 2, g.handB[1] + 1)
           : PROPS.magnifier(P, r.a, g.handF[0], g.handF[1], Math.floor(s.t * 2) % 4 === 0),
       }));
     },
@@ -1701,7 +1743,7 @@ const ACTIONS = {
       }
       const wiggle = Math.floor(s.t * 10) % 2;
       return stand({
-        armB: ["forward", 2], armF: ["forward", wiggle - 1], eyes: "down", nod: 1,
+        armB: ["forward", 2], armF: ["forward", wiggle - 1], gripB: true, eyes: "down", nod: 1,
         props: (P, g) => { propClipboard(P, g.handB[0], g.handB[1], lines); propPencil(P, g.handF[0], g.handF[1] + wiggle); },
       });
     },
@@ -1726,7 +1768,7 @@ const ACTIONS = {
       if (end && !s.found) { s.found = true; r.quip("dig"); r.stage.sparkle(r.x + r.face * 4, r.headTop, 6); }
       if (s.t >= s.dur) s.done = true;
       r.stage.hole(r.x + r.face * 18, s.hole);
-      if (end) return stand({ armF: ["up", 0], eyes: "wide", mouth: "smile", props: (P, g) => propPaper(P, g.handF[0] - 2, g.handF[1] + 1) });
+      if (end) return stand({ armB: ["up", 0], gripB: true, eyes: "wide", mouth: "smile", props: (P, g) => propPaper(P, g.handB[0] - 2, g.handB[1] + 1) });
       return stand({ crouch: down ? 1 : 0, armF: ["low", down ? 1 : 0], armB: ["low", -1], eyes: "down",
                      props: (P, g) => propShovel(P, g.handF[0], g.handF[1], down) });
     },
@@ -1738,7 +1780,7 @@ const ACTIONS = {
       if (s.turn && s.t > s.dur / 2 && !s.turned) { s.turned = true; r.face *= -1; }
       if (s.t > 1.2 && !s.said) { s.said = true; r.quip("telescope"); }
       if (s.t >= s.dur) s.done = true;
-      return stand({ armF: ["high", 1], armB: ["high", 0], liftB: 1, props: (P, g) => propSpyglass(P, g, ext) });
+      return stand({ armB: ["at", [14, 6]], liftB: 1, props: (P, g) => propSpyglass(P, g, ext) });   // the far hand holds it up to the eye
     },
   },
   typing: {
@@ -1754,7 +1796,7 @@ const ACTIONS = {
       }
       if (s.t > 2 && Math.random() < 0.08) r.stage.smoke(r.x + r.face * 14, 18);
       if (Math.random() < 0.25) r.stage.bit(r.x + r.face * 10, 16);
-      return stand({ sit: true, armF: ["low", 1 + k], armB: ["low", 2 - k], eyes: "down", props: P => propLapLaptop(P, 2, k) });
+      return stand({ sit: true, armF: ["at", [6 + k, -4]], armB: ["at", [9 - k, -4]], eyes: "down", props: P => propLapLaptop(P, 2, k) });   // hands on the keys
     },
   },
   papers: {
@@ -1795,8 +1837,8 @@ const ACTIONS = {
       if (s.arrived && s.t - s.arrived > 0.8) s.done = true;
       const walking = !s.arrived;
       return stand(Object.assign(walking ? walkPose(r, s.dist || 0) : {}, {
-        armF: ["high", -1], armB: ["high", -2], eyes: s.fell ? "wide" : "open", mouth: s.fell ? "o" : "none",
-        props: s.fell ? null : (P, g) => propStack(P, g.handF[0], g.handF[1] + 2, s.n, s.t * 5, s.colors),
+        armF: ["low", 2], armB: ["low", 3], eyes: s.fell ? "wide" : "open", mouth: s.fell ? "o" : "none",   // carried low, out in front: the face stays clear
+        props: s.fell ? null : (P, g) => propStack(P, g.handB[0], g.handB[1] + 2, s.n, s.t * 5, s.colors),
       }));
     },
   },
@@ -1995,8 +2037,8 @@ const ACTIONS = {
       const bars = Math.min(5, Math.floor(s.t * 2)), crash = !s.up && s.t > 2.8;
       if (s.t > 2.8 && !s.said) { s.said = true; r.line(s.up ? "chart_up" : "chart_down", 0.8); if (s.up) r.stage.sparkle(ahead(r, 10), r.headTop, 5); }
       if (s.t >= s.dur) s.done = true;
-      return stand({ armF: ["high", 1], armB: ["high", 0], mouth: s.t > 2.8 ? (s.up ? "smile" : "o") : "none", eyes: crash ? "wide" : "open",
-                     props: (P, g) => propChart(P, g.handF[0] - 2, g.handF[1] + 1, bars, crash) });
+      return stand({ armF: ["high", 0], armB: ["high", 3], gripB: true, mouth: s.t > 2.8 ? (s.up ? "smile" : "o") : "none", eyes: crash ? "wide" : "open",
+                     props: (P, g) => propChart(P, g.handB[0] - 1, g.handB[1] - 2, bars, crash) });
     },
   },
   apple: {                                       // an apple falls on their head. Eureka.
@@ -2073,7 +2115,7 @@ const ACTIONS = {
       if (s.t > 1.15 && !s.hit) { s.hit = true; r.stage.dust(ahead(r, 13), 4); r.line(s.ok ? "stamp_ok" : "stamp_no", 0.75); }
       if (s.t >= s.dur) s.done = true;
       const raised = s.t < 1;
-      return stand({ crouch: s.hit && s.t < 1.7 ? 2 : 0, armF: [raised ? "up" : "low", raised ? 1 : 3], eyes: s.hit ? "closed" : "open",
+      return stand({ crouch: s.hit && s.t < 1.7 ? 2 : 0, armF: [raised ? "high" : "low", raised ? 1 : 3], eyes: s.hit ? "closed" : "open",
                      mouth: s.hit ? (s.ok ? "smile" : "flat") : "none",
                      props: (P, g) => { propSheet(P, 9, s.hit ? (s.ok ? "#2f9e44" : "#e03131") : null); propStamp(P, g.handF[0], g.handF[1]); } });
     },
@@ -2236,8 +2278,8 @@ const ACTIONS = {
       if (!stop) s.off = Math.floor(s.t * 7);
       if (stop && !s.said) { s.said = true; r.line("globe", 0.7); }
       if (s.t >= s.dur) s.done = true;
-      return stand({ armF: ["forward", 0], armB: stop ? ["forward", 6] : ["forward", 3 + (Math.floor(s.t * 6) % 2)], eyes: "down",
-                     mouth: stop ? "smile" : "none", props: (P, g) => propGlobe(P, g.handF[0] + 1, g.handF[1] + 1, s.off || 0) });
+      return stand({ armB: ["forward", 1], armF: stop ? ["high", 2] : ["high", Math.floor(s.t * 6) % 2], eyes: "down",   // held out on the far hand, spun with the near one
+                     mouth: stop ? "smile" : "none", props: (P, g) => propGlobe(P, g.handB[0] - 2, g.handB[1] + 1, s.off || 0) });
     },
   },
   trip: {
@@ -2339,7 +2381,7 @@ const QUIRKS = {
   } },
   david: { dur: 2.8, run(r, s) {                   // checks his watch and taps a foot
     if (s.t > 1.2 && !s.said) { s.said = true; if (r.rand() < 0.3) r.say(pick(r.rand, ["Time is money.", "Running late.", "Tick tock."])); }
-    return stand({ armF: ["high", -3], eyes: "down", brow: "stern", mouth: "flat", liftF: s.t > 1 && Math.floor(s.t * 4) % 2 ? 1 : 0,
+    return stand({ armF: ["high", -3], eyes: "down", brow: "stern", mouth: "flat", liftF: s.t > 1 && Math.floor(s.t * 4) % 2 ? "tap" : 0,
                    props: (P, g) => { P(g.handF[0] - 2, g.handF[1] - 2, 2, 2, "#d4a017"); P(g.handF[0] - 2, g.handF[1] - 1, 1, 1, "#fff3bf"); } });
   } },
   javier: { dur: 2.2, run(r, s) {                  // wipes his brow: phew
@@ -2482,6 +2524,7 @@ const onStage = () => new Set(stages.concat(guides).flatMap(s => s.cast().map(r 
 // ---------- a researcher ----------
 
 class Researcher {
+  get acts() { return ACTIONS; }                 // the bits this researcher can do (the About page's actors have more)
   constructor(stage, rec, carry) {
     this.stage = stage; this.mood = stage.mood;
     this.a = makeLook(rec.kind, rec.seed);
@@ -2511,7 +2554,8 @@ class Researcher {
     if (this.act && this.act.cleanup) this.act.cleanup();   // a bit cut short tidies away its bird, cat or dollar
     this.y = 0;
     this.prev = this.act && this.act.name;
-    this.act = Object.assign({ name, t: 0 }, ACTIONS[name].init ? ACTIONS[name].init(this, opts) : {});
+    const acts = this.acts;
+    this.act = Object.assign({ name, t: 0 }, acts[name].init ? acts[name].init(this, opts) : {});
   }
   chooseNext() {
     if (this.next) { const [n, o] = this.next; this.next = null; return this.begin(n, o); }
@@ -2559,7 +2603,7 @@ class Researcher {
     }
     const act = this.act;
     act.t += dt;
-    let pose = ACTIONS[act.name].run(this, act, dt);
+    let pose = this.acts[act.name].run(this, act, dt);
     const prop = this.a.prop;
     if (pose.carry && prop && !pose.props) {      // keep holding the signature prop
       pose = Object.assign({}, pose);
@@ -2802,7 +2846,8 @@ class Stage {
     }
     if (p.props) {
       p.props(P, g);
-      const [hx, hy] = g.handF; P(hx - 1, hy - 1, 3, 3, r.a.skin);   // fingers in front of what they hold
+      const [hx, hy] = p.gripB ? g.handB : g.handF;               // fingers in front of what they hold (gripB: the far hand holds it)
+      P(hx - 1, hy - 1, 3, 3, p.gripB ? r.a.skinD : r.a.skin);
     }
     r.headTop = g.crown + 2 + Math.round(r.y);
     r.topY = peak + 1 + Math.round(r.y);                        // the highest pixel, props and raised arms included
@@ -3020,6 +3065,399 @@ class FlowStage extends Stage {
   }
 }
 
+// ---------- the About page's strip: one mission, a storyboard on a loop (#139) ----------
+
+// On the published About page (#flow[data-tour]) the strip plays a short scene instead of following real work.
+// One made-up mission runs the whole line, chased from box to box by two researchers: P, from the Principal
+// Investigator's crew, and R, from the Research Assistant's. A third, N, brings it to Publish once they have
+// gone, so the strip never holds more than two. Each box lights when an actor's "light" beat reaches it (a
+// "tourstep" event, which assets/about.js turns into Flow.apply), so the lights follow the sprites, never a clock.
+// A new pair plays every loop.
+//
+// TOUR is the storyboard: each actor's beats, played in order. A beat is data:
+//   ["enter", step, side, via]   walk in from the left or right edge (onto `via` first, if given) to the step
+//   ["go", step, {pace, beside}] go there: along the lane hopping the gaps, leaping down where the strip turns.
+//                                pace: walk, run (the default) or sprint; beside: stop next to that actor
+//   ["light", step]              the work reaches this box: it lights (a review shows one waiting)
+//   ["approve", step]            the review's count clears
+//   ["say", text, hold]          a speech bubble; hold: wait until it has been read
+//   ["do", bit, opts]            a bit (ACTIONS, or the tour's own TOUR_BITS); opts set its state (dur, ok, ...)
+//   ["wait", seconds, bit]       stand there doing a hold bit: stand, tap, sleep or jitter
+//   ["until", signal, bit, lines] the same until another actor's ["signal", name]; lines: [[seconds, text], ...]
+//   ["signal", name]  ["face", actor]  ["cue", actor] (on once the others are gone)  ["exit", side]
+const TOUR_PACE = { walk: 42, run: 105, sprint: 175 };   // px per second
+const TOUR_GAP = 2.5;                                    // seconds of dark strip between loops
+const TOUR_CAST = { P: "pi", R: "assistant", N: "desk" };   // whose crew each actor comes from (desk: anyone)
+const TOUR_FIRST = ["P", "R"];                           // on at the start; the rest wait for their cue
+const TOUR = {
+  P: [
+    ["enter", "theorist", "left"],
+    ["light", "theorist"], ["say", "What ties these together?"], ["do", "chalkboard", { dur: 4.4, q: false }],
+    ["go", "theorist_check"], ["light", "theorist_check"], ["say", "Questions only. Check!", true],
+    ["go", "finder"], ["light", "finder"], ["say", "Any new leads out there?"], ["do", "telescope", { dur: 3.2, turn: false }],
+    ["go", "finder_check"], ["light", "finder_check"], ["say", "Every lead backed by a real page.", true],
+    ["go", "epic_review"], ["light", "epic_review"], ["say", "New epic! Your call, editor.", true], ["wait", 0.9],
+    ["approve", "epic_review"], ["say", "Approved!"], ["do", "cheer"],
+    ["go", "sources", { beside: "R" }], ["light", "sources"], ["face", "R"],
+    ["say", "Sources! You're up.", true], ["wait", 0.5, "stand"],
+    ["say", "...Hello?", true], ["wait", 0.5, "stand"],
+    ["do", "shout", { text: "WAKE UP!" }], ["signal", "wake"],
+    ["until", "awake"],
+    ["wait", 0.8], ["go", "brief"],
+    ["until", "sprint", "tap", [[0.4, "Any minute now..."], [3.6, "The editor's waiting..."]]],
+    ["say", "We're going to be late!"], ["until", "sources", "tap"],
+    ["face", "R"], ["say", "With two seconds to spare.", true],
+    ["light", "brief"], ["do", "notes", { dur: 3.6, toss: false }], ["say", "Facts first."], ["do", "notes", { dur: 2.4, toss: true }],
+    ["go", "source_check"], ["light", "source_check"], ["say", "Show me the source."],
+    ["do", "search", { dur: 2.6, sniff: false, found: true }],
+    ["go", "brief_review"], ["light", "brief_review"], ["say", "Brief's on your desk!", true], ["wait", 0.9],
+    ["approve", "brief_review"], ["say", "Approved! On to the article."], ["do", "cheer"],
+    ["go", "writer"], ["light", "writer"], ["signal", "writing"], ["say", "Words, assemble!"], ["do", "typing", { dur: 4.8 }],
+    ["go", "article_check"], ["light", "article_check"], ["say", "Fact or possibility?"],
+    ["do", "search", { dur: 2.6, sniff: false, found: true }],
+    ["go", "article_rating", { beside: "R" }], ["light", "article_rating"], ["face", "R"], ["say", "All yours.", true],
+    ["signal", "article"],
+    ["until", "eager"], ["say", "Read it first.", true], ["signal", "read"],
+    ["go", "article_review", { pace: "walk" }],
+    ["until", "approved"], ["do", "cheer"], ["face", "R"], ["say", "Coffee?", true], ["signal", "coffee"],
+    ["cue", "N"], ["wait", 1.4], ["exit", "right"],
+  ],
+  R: [
+    ["enter", "sources", "right", "epic_review"],
+    ["say", "I'll wait at Sources. Plenty of time.", true], ["do", "yawn"],
+    ["until", "wake", "sleep"],
+    ["do", "jolt"], ["say", "I'm up! I'm up!", true], ["signal", "awake"],
+    ["say", "Coffee first."], ["do", "coffee"],
+    ["say", "Let's dig!"], ["do", "dig", { dur: 4.4 }],
+    ["say", "47 tabs open!"], ["do", "search", { dur: 2.2, sniff: false, found: true }],
+    ["signal", "sprint"], ["go", "brief", { pace: "sprint", beside: "P" }], ["do", "skid"], ["do", "hand"],
+    ["say", "Made it! Sources!", true], ["signal", "sources"],
+    ["wait", 2.4], ["say", "I'll be at Rating. Wide awake this time!"],
+    ["go", "article_rating"],
+    ["until", "writing", "stand"],
+    ["do", "nod", { dur: 3.1 }], ["say", "Nope! Not again!", true], ["do", "coffee", { dur: 2.8 }],
+    ["until", "article", "jitter"],
+    ["say", "Ten out of ten!", true], ["signal", "eager"],
+    ["until", "read", "jitter"],
+    ["do", "read", { dur: 2.8, slam: false }],
+    ["say", "Logic 9, intrigue 8, sources 9."], ["do", "chart", { up: true, dur: 3.6 }],
+    ["go", "rating_check"], ["light", "rating_check"], ["say", "26 of 30. It passes!", true],
+    ["go", "article_review", { beside: "P" }], ["light", "article_review"],
+    ["say", "Over to you, editor: publish it?", true], ["wait", 0.9],
+    ["approve", "article_review"], ["signal", "approved"], ["do", "cheer"],
+    ["until", "coffee"], ["say", "Always.", true], ["exit", "right"],
+  ],
+  N: [
+    ["enter", "publisher", "left"], ["light", "publisher"], ["say", "Hot off the press!"], ["do", "papers"],
+    ["wait", 1.6, "stand"], ["say", "Extra, extra!"], ["exit", "left"],
+  ],
+};
+
+// The tour's own bits, beside the researchers' ACTIONS. A hold (wait, until) is a bit too.
+const zz = (r, s) => { if (Math.floor(s.t / 0.9) !== Math.floor((s.t - 0.017) / 0.9)) r.stage.z(r.x + r.face * 4, r.headTop - 4); };
+const TOUR_BITS = {
+  trek: {                                        // run the legs a "go" planned: along a lane, or a leap down to the next
+    init(r, o) { return { legs: o.legs, i: 0, speed: o.speed, sprint: o.speed >= TOUR_PACE.sprint, exit: o.exit, to: o.to, beside: o.beside }; },
+    run(r, s, dt) {
+      const leg = s.legs[s.i];
+      if (!leg) {
+        r.y = 0; s.done = true;
+        if (s.exit) r.gone = true;
+        return stand({ carry: true });
+      }
+      if (leg.leap) {
+        if (leg.t == null) {
+          leg.t = 0; leg.x0 = r.x; leg.g0 = r.stage.ground;
+          r.stage.ground = leg.ground; r.stage.platforms = leg.platforms;
+          leg.dur = clamp(Math.hypot(leg.x - leg.x0, leg.ground - leg.g0) / 150, 0.45, 0.85);
+          r.face = Math.sign(leg.x - leg.x0) || r.face;
+        }
+        leg.t += dt;
+        const k = clamp(leg.t / leg.dur, 0, 1);
+        r.x = leg.x0 + (leg.x - leg.x0) * k;
+        r.y = (leg.ground - leg.g0) * (1 - k) + 64 * k * (1 - k);   // from the old floor, over a little arc, to the new
+        if (r.bubble) r.bubble.y = null;         // a bubble only ever drifts up; on the way down it follows the speaker
+        if (k >= 1) { r.y = 0; r.stage.dust(r.x, 3); s.i++; s.dist = 0; }
+        return stand({ armF: ["up", 0], armB: ["up", 0], legF: 2, legB: -2, eyes: "wide", mouth: "o" });
+      }
+      r.alpha = r.stage.edgeFade(r.x);
+      if (stepToward(r, s, leg.x, dt, s.speed)) { r.y = 0; s.i++; return stand({ carry: true }); }
+      r.y = r.stage.hop(r.x);
+      return stand(Object.assign(walkPose(r, s.dist || 0), { carry: !s.sprint },
+        s.sprint ? { eyes: "wide", mouth: "grin", armF: ["high", 0], armB: ["low", 0] } : {}));
+    },
+  },
+  hold: {                                        // stand there until the time is up or a signal comes
+    init(r, o) {
+      const s = Object.assign({ bit: "stand", lines: [], turn: between(r.rand, 2.5, 5) }, o);
+      s.lines = (s.lines || []).slice();
+      if (s.bit === "jitter") s.bx = r.x;
+      return s;
+    },
+    run(r, s) {
+      while (s.lines.length && s.t >= s.lines[0][0]) r.say(s.lines.shift()[1]);
+      const over = s.until ? r.tour.signals.has(s.until) : s.t >= (s.dur || 0);
+      if (over) { s.done = true; if (s.bx != null) r.x = s.bx; }
+      if (s.bit === "sleep") {
+        zz(r, s);
+        return stand({ sit: true, eyes: "closed", nod: 1, armF: ["low", -2], mouth: Math.floor(s.t) % 3 === 0 ? "o" : "none" });
+      }
+      if (s.bit === "jitter") {                  // two coffees in: can't keep still
+        r.x = s.bx + (Math.floor(s.t * 18) % 2 ? 1 : -1);
+        if (Math.random() < 0.04) r.stage.sparkle(r.x, r.headTop, 1);
+        return stand({ eyes: "wide", mouth: "grin", liftF: Math.floor(s.t * 9) % 2, liftB: Math.floor(s.t * 9 + 1) % 2, carry: true });
+      }
+      if (s.bit === "tap") {                     // look at the watch, tap a foot, look again
+        const watch = s.t % 3.2 < 1.3;
+        return stand(watch ? { armF: ["high", -3], eyes: "down", brow: "stern", mouth: "flat",
+                               props: (P, g) => { P(g.handF[0] - 2, g.handF[1] - 2, 2, 2, "#d4a017"); P(g.handF[0] - 2, g.handF[1] - 1, 1, 1, "#fff3bf"); } }
+          : { carry: true, brow: "stern", mouth: "flat", liftF: Math.floor(s.t * 4) % 2 });
+      }
+      if (s.t > s.turn) { r.face *= -1; s.turn = s.t + between(r.rand, 3, 6); }   // stand about, now and then looking round
+      return stand({ carry: true, bob: breath(r, s.t) });
+    },
+  },
+  yawn: {                                        // a big stretch and a yawn
+    init() { return { dur: 2.6 }; },
+    run(r, s) {
+      const up = s.t < 1.7;
+      if (s.t >= s.dur) s.done = true;
+      return stand({ armF: up ? ["up", 0] : ["swing", 0], armB: up ? ["up", 0] : ["swing", 0], eyes: "closed", mouth: up ? "o" : "smile",
+                     liftF: up && s.t > 0.4 ? 1 : 0, liftB: up && s.t > 0.4 ? 1 : 0 });
+    },
+  },
+  nod: {                                         // nodding off on their feet... and snapping awake
+    init() { return { dur: 3.4 }; },
+    run(r, s) {
+      const snap = s.t > s.dur - 0.7;
+      if (snap && !s.woke) { s.woke = true; r.icon("bang", 0.6); }
+      if (!snap) zz(r, s);
+      r.y = snap ? Math.sin((s.t - (s.dur - 0.7)) / 0.7 * Math.PI) * 9 : 0;
+      if (s.t >= s.dur) { r.y = 0; s.done = true; }
+      return snap ? stand({ eyes: "wide", mouth: "o", armF: ["up", 0], armB: ["up", 0] })
+        : stand({ eyes: "closed", nod: Math.floor(s.t * 1.4) % 2, crouch: s.t > 1.4 ? 1 : 0, armF: ["low", -2], armB: ["low", -2] });
+    },
+  },
+  jolt: {                                        // woken with a start
+    init(r) { r.icon("bang", 0.7); return { dur: 1.1 }; },
+    run(r, s) {
+      r.y = s.t < 0.6 ? Math.sin(s.t / 0.6 * Math.PI) * 14 : 0;
+      if (s.t >= s.dur) { r.y = 0; s.done = true; }
+      return stand({ eyes: "wide", mouth: "o", armF: ["up", 0], armB: ["up", 0] });
+    },
+  },
+  shout: {                                       // hands round the mouth
+    init(r, o) { r.say(o.text, 1.9); return { dur: 1.8 }; },
+    run(r, s) {
+      r.y = s.t < 0.3 ? Math.sin(s.t / 0.3 * Math.PI) * 5 : 0;
+      if (s.t >= s.dur) { r.y = 0; s.done = true; }
+      return stand({ armF: ["mouth", 0], armB: ["mouth", 0], eyes: "wide", mouth: "o", brow: "stern" });
+    },
+  },
+  skid: {                                        // the sprint ends in a cloud of dust
+    init() { return { dur: 0.7 }; },
+    run(r, s) {
+      if (Math.floor(s.t * 12) !== Math.floor((s.t - 0.017) * 12) && s.t < 0.45) r.stage.dust(r.x - r.face * 6, 2);
+      if (s.t >= s.dur) s.done = true;
+      return stand({ crouch: s.t < 0.45 ? 2 : 0, armF: ["high", 0], armB: ["high", 0], eyes: "wide", mouth: "o", liftB: 1 });
+    },
+  },
+  hand: {                                        // here are the papers
+    init() { return { dur: 1.2 }; },
+    run(r, s) {
+      if (s.t >= s.dur) s.done = true;
+      return stand({ armF: ["forward", 0], mouth: "smile", eyes: "happy", props: (P, g) => propPaper(P, g.handF[0] - 1, g.handF[1] - 2) });
+    },
+  },
+  cheer: {                                       // two little jumps, arms up
+    init(r) { r.stage.sparkle(r.x, r.headTop, 4); return { dur: 1.6 }; },
+    run(r, s) {
+      r.y = Math.abs(Math.sin(s.t / 0.8 * Math.PI * 2)) * 8;
+      if (s.t >= s.dur) { r.y = 0; s.done = true; }
+      return stand({ armF: ["up", 0], armB: ["up", 0], eyes: "happy", mouth: "smile", blush: true });
+    },
+  },
+};
+const TOUR_ACTS = Object.assign({}, ACTIONS, TOUR_BITS);
+
+// What each beat does. True when it started a bit, so the actor waits for that bit to end.
+const BEATS = {
+  enter(r, step, side, via) {
+    const t = r.tour, start = via ? t.el(via) : t.el(step);
+    if (!t.el(step)) return false;
+    r.place(via || step, side === "right" ? t.W + EDGE : -EDGE);
+    const legs = via ? [{ x: t.mid(start) }].concat(t.path(via, step, r)) : [{ x: t.spot(step, r) }];
+    r.at = step;
+    r.begin("trek", { legs, speed: TOUR_PACE.walk * 1.4, to: step });
+    return true;
+  },
+  go(r, step, o = {}) {
+    const t = r.tour;
+    if (!t.el(step)) return false;
+    const beside = o.beside && t.actor(o.beside), legs = t.path(r.at, step, r, beside);
+    r.at = step;
+    if (!legs.length) return false;
+    r.begin("trek", { legs, speed: TOUR_PACE[o.pace || "run"], to: step, beside });
+    return true;
+  },
+  light(r, step) { r.tour.light(step, r.worker, 1); return false; },
+  approve(r, step) { r.tour.light(step, r.worker, 0); return false; },
+  say(r, text, hold) {
+    r.say(text, readTime(text) + 0.4);
+    if (!hold) return false;
+    r.begin("hold", { dur: readTime(text) * 0.9 });
+    return true;
+  },
+  do(r, bit, opts = {}) {
+    if (!TOUR_ACTS[bit]) return false;
+    r.begin(bit, opts);
+    Object.assign(r.act, opts);                  // the storyboard's settings win over the bit's dice
+    return true;
+  },
+  wait(r, dur, bit, lines) { r.begin("hold", { dur, bit, lines }); return true; },
+  until(r, signal, bit, lines) {
+    if (r.tour.signals.has(signal)) return false;
+    r.begin("hold", { until: signal, bit, lines });
+    return true;
+  },
+  signal(r, name) { r.tour.signals.add(name); return false; },
+  face(r, who) { const o = r.tour.actor(who); if (o) r.face = Math.sign(o.x - r.x) || r.face; return false; },
+  cue(r, who) { r.tour.queue.push(who); return false; },
+  exit(r, side) {
+    r.leaving = true;
+    r.begin("trek", { legs: [r.tour.edge(side)], speed: TOUR_PACE.walk * 1.4, exit: side });
+    return true;
+  },
+};
+
+// A researcher who plays their beats instead of picking bits at random. The storyboard does all the talking.
+class Actor extends Researcher {
+  constructor(tour, id, rec) {
+    const slot = Object.create(tour);           // their own floor: the row they stand on, and its boxes to hop
+    slot.ground = tour.ground; slot.platforms = null;
+    super(slot, rec, { x: -EDGE, face: 1 });
+    this.tour = tour; this.id = id; this.worker = TOUR_CAST[id];
+    this.beats = (TOUR[id] || []).slice(); this.at = null;
+    this.quipIn = Infinity; this.alpha = 0;
+    this.play();
+  }
+  get acts() { return TOUR_ACTS; }
+  quip() {}
+  line() {}
+  place(step, x) {                               // stand on this step's row, at x
+    const el = this.tour.el(step);
+    this.stage.ground = this.tour.groundOf(el); this.stage.platforms = this.tour.row(el);
+    this.x = x; this.y = 0; this.at = step;
+  }
+  chooseNext() {
+    this.next = null;                            // a bit's own follow-up (papers -> walk) isn't in the script
+    this.play();
+  }
+  play() {
+    while (this.beats.length) {
+      const [op, ...args] = this.beats.shift();
+      if (BEATS[op] && BEATS[op](this, ...args)) return;
+    }
+    this.begin("hold", { until: "never" });      // out of beats: stand quietly until the loop ends
+  }
+}
+
+class Tour extends FlowStage {
+  constructor(host) { super(host); this.hold = 2; }   // the strip always counts as two on stage
+  el(step) { return step && this.host.querySelector(`[data-step="${step}"]`); }
+  keys() { return [...this.host.querySelectorAll("[data-step]")].map(e => e.dataset.step); }   // flow order
+  groundOf(el) { return el.offsetTop - 1; }
+  mid(el) { return el.offsetLeft + el.offsetWidth / 2; }
+  row(el) {                                      // the boxes on this row, reviews too: they stand on those as well
+    const top = el.offsetTop;
+    return [...this.host.querySelectorAll(".step, .check, .human")].filter(n => Math.abs(n.offsetTop - top) < 4)
+      .map(n => [n.offsetLeft, n.offsetLeft + n.offsetWidth]).sort((a, b) => a[0] - b[0]);
+  }
+  range() { return [6, (this.W || 200) - 6]; }   // the whole strip: they walk in and off its edges
+  actor(id) { return this.actors.find(a => a.id === id); }
+  spot(step, r, beside) {                        // where to stop on a step: its middle, or next to someone there
+    const el = this.el(step), m = this.mid(el);
+    if (beside && beside.at === step && !beside.leaving) {
+      const dir = Math.sign(beside.x - r.x) || 1;
+      return beside.x - dir * 26;
+    }
+    return el.classList.contains("step") ? m + between(r.rand, -6, 6) : m;
+  }
+  // The legs from one step to another: along a row it's one run (the hops come with it); a box on another row is a
+  // leap down to it, from wherever the run got to (in the wide strip that's the review where the lane turns).
+  path(from, to, r, beside) {
+    const keys = this.keys(), j = keys.indexOf(to), legs = [];
+    let i = keys.indexOf(from), g = r.stage.ground;
+    if (i < 0 || i > j) i = j - 1;
+    for (let k = i + 1; k <= j; k++) {
+      const el = this.el(keys[k]), eg = this.groundOf(el), x = k === j ? this.spot(to, r, beside) : this.mid(el);
+      if (Math.abs(eg - g) > 3) { legs.push({ leap: true, x, ground: eg, platforms: this.row(el) }); g = eg; }
+      else if (k === j) legs.push({ x });
+    }
+    return legs;
+  }
+  light(step, worker, waiting) {
+    document.dispatchEvent(new CustomEvent("tourstep", { detail: { step, worker, waiting } }));
+  }
+  edge(side) { return { x: side === "right" ? this.W + EDGE + 4 : -EDGE - 4 }; }
+  // A resize moves every box: whoever is on the way somewhere lands there at once, the rest step back onto their box.
+  layout() {
+    super.layout();
+    for (const a of this.actors || []) {
+      const s = a.act, el = this.el(a.at);
+      if (s && s.name === "trek" && s.exit) { s.legs = [this.edge(s.exit)]; s.i = 0; continue; }
+      if (!el) continue;
+      if (s && s.name === "trek") { a.place(a.at, this.spot(a.at, a, s.beside)); a.alpha = 1; s.legs = []; continue; }
+      a.stage.ground = this.groundOf(el); a.stage.platforms = this.row(el);
+      a.x = clamp(a.x, el.offsetLeft - 24, el.offsetLeft + el.offsetWidth + 24);
+    }
+  }
+  schedule() {
+    this.actors = []; this.queue = []; this.signals = new Set(); this.leavers = []; this.crew = {};
+    this.running = false; this.startAt = now() + 1.2;
+    if (!this.listening) {
+      this.listening = true;
+      document.addEventListener("tourframe", e => this.still(e.detail));
+    }
+  }
+  cast() { return this.actors || []; }
+  save() {}                                      // the scene starts over on every page
+  admit() { return false; }                      // nobody walks in on the strip but the cast
+  change() {}                                    // it makes the changes itself
+  bring(id) {
+    const kind = nextCharacter(onStage(), crewKey(TOUR_CAST[id]));
+    const a = new Actor(this, id, { kind, seed: Math.floor(Math.random() * 2 ** 31) });
+    this.actors.push(a);
+    return a;
+  }
+  update(dt) {
+    const t = now();
+    if (!this.running && !this.actors.length && t >= this.startAt && this.W) {
+      this.running = true; this.signals = new Set(); this.queue = [];
+      this.light(null);                          // a dark strip, and assets/about.js knows the scene drives it
+      for (const id of TOUR_FIRST) this.bring(id);
+    }
+    for (const a of this.actors) a.update(dt);
+    this.actors = this.actors.filter(a => !a.gone);
+    if (this.running && !this.actors.length) {
+      if (this.queue.length) this.bring(this.queue.shift());
+      else { this.running = false; this.light(null); this.startAt = t + TOUR_GAP; }
+    }
+    this.tick(dt);
+  }
+  // Reduced motion: no scene. assets/about.js lights each step in turn and says so here; a still researcher
+  // from the right crew stands on that step.
+  still(d) {
+    if (!REDUCE || !this.host.isConnected) return;
+    if (!this.actors.length) { this.bring("P"); this.bring("R"); }
+    const step = d && d.step, el = this.el(step);
+    const who = this.actor(d && d.worker === "assistant" ? "R" : "P");
+    for (const a of this.actors) { a.alpha = 0; a.bubble = null; }
+    if (el && who) { who.place(step, this.mid(el)); who.alpha = 1; who.begin("hold", { until: "never" }); who.update(0); }
+    this.draw();
+  }
+}
+
 // ---------- a crew: a worker's whole cast standing about on its Settings card ----------
 
 class Crew extends Stage {
@@ -3144,10 +3582,11 @@ function wrapText(ctx, text, max) {
 // then the card stages, longest-waiting first. Arrivals come one at a time, a random 12-20 s apart, so two
 // never walk in together and a full page fills up over about a minute.
 let nextEntry = 0;
+const onPage = () => stages.reduce((n, s) => n + Math.max(s.cast().length, s.hold || 0), 0);   // the About strip holds two seats
 function entered() { nextEntry = Math.max(nextEntry, now() + between(Math.random, ENTRY_MIN, ENTRY_MAX)); }
 function admit() {
   const t = now();
-  if (t < nextEntry || stages.reduce((n, s) => n + s.cast().length, 0) >= MAX_ON_STAGE) return;
+  if (t < nextEntry || onPage() >= MAX_ON_STAGE) return;
   const flow = stages.find(s => s.kind === "flow");
   if (flow && flow.admit(t)) { entered(); return; }
   const ready = stages.filter(s => s.kind === "card" && !s.resident && !s.retired && s.nextAt && t >= s.nextAt)
@@ -3159,7 +3598,7 @@ function admit() {
 function still() {
   const flow = stages.find(s => s.kind === "flow");
   if (flow) for (const [w, c] of Object.entries(flow.crew || {})) if (!c.r && c.slot.home) flow.spawn(w, null, true);
-  let room = MAX_ON_STAGE - stages.reduce((n, s) => n + s.cast().length, 0);
+  let room = MAX_ON_STAGE - onPage();
   for (const s of stages) if (s.kind === "card" && !s.resident && room-- > 0) s.spawn(null, true);
   for (const s of stages) { for (const r of s.cast()) r.update(0); s.draw(); }
   for (const c of crews) { c.slots.forEach(r => r.update(0)); c.draw(); }
@@ -3188,7 +3627,7 @@ function rescan() {
   for (let i = stages.length - 1; i >= 0; i--) if (stages[i].dead) { stages[i].kill(); stages.splice(i, 1); }
   document.querySelectorAll(".card[data-lab], .note[data-lab], [data-desk][data-lab]").forEach(c => { if (!stages.some(s => s.host === c)) stages.push(new Stage(c, "card")); });
   const track = document.querySelector(".flow-track[data-lab]");
-  if (track && !stages.some(s => s.host === track)) stages.push(new FlowStage(track));
+  if (track && !stages.some(s => s.host === track)) stages.push(track.closest("[data-tour]") ? new Tour(track) : new FlowStage(track));
   document.querySelectorAll(".crew[data-crew]").forEach(c => { if (!crews.some(o => o.host === c)) crews.push(new Crew(c)); });
   document.querySelectorAll(".chat-guide").forEach(c => {
     if (guides.some(o => o.host === c)) return;
@@ -3239,7 +3678,7 @@ const PARTS = {
   layer: ["back", "body", "behindHead", "head"],
   icon: Object.keys(ICONS),
 };
-const COLOR_KEYS = ["hair", "top", "shirt", "pants", "shoes", "pack", "tie", "bow", "hijab", "cap", "beanie", "pom", "skirt", "frame"];
+const COLOR_KEYS = ["hair", "top", "shirt", "pants", "shoes", "pack", "tie", "bow", "hijab", "cap", "beanie", "pom", "skirt", "frame", "metal", "glow"];
 const FLAG_KEYS = ["lash", "lids", "bushy", "ahoge", "grin", "freckles", "pencil", "rolled"];
 const ENUM_KEYS = ["worker", "style", "head", "outfit", "face", "facial", "legs", "brow", "mouth"];
 const SPEC_KEYS = new Set(["base", "name", "skin", "prop", "fav", "maps", "propMap", "quirk", ...COLOR_KEYS, ...FLAG_KEYS, ...ENUM_KEYS]);
@@ -3417,6 +3856,16 @@ for (const [key, spec] of Object.entries(SPRITE_CONFIG.add || {})) {   // sprite
   const v = registerSprite(key, spec);
   if (!v.ok) console.warn(`researchers: sprite ${key} skipped:`, v.errors.join("; "));
 }
+// Cyborg sprites (assets/cyborgs.json, the Settings page's switch): each joins in place of the built-in it starts
+// from, which stays home; one whose original is switched off stays home too.
+const CYBORGS = [];
+for (const [key, spec] of Object.entries(SPRITE_CONFIG.cyborgs || {})) {
+  if (ROSTER[key]) continue;                      // a custom sprite already has the name
+  const v = registerSprite(key, spec);
+  if (!v.ok) { console.warn(`researchers: cyborg ${key} skipped:`, v.errors.join("; ")); continue; }
+  CYBORGS.push(key);
+  if (OFF.has(spec.base)) OFF.add(key); else OFF.add(spec.base);
+}
 
 function boot() {
   addEventListener("pagehide", () => stages.forEach(s => s.save()));
@@ -3424,7 +3873,7 @@ function boot() {
   document.addEventListener("chatguide", e => guides.forEach(g => g.show(e.detail)));
   rescan();
 }
-window.Researchers = { stages, crews, guides, guideFor, ROSTER, makeLook, ACTIONS, Stage, FlowStage, Crew, Researcher, rescan, tick, QUIPS,
-  PARTS, SLOTS, MAP_BOX, PROP_BOX, FACE_BOX, CAST, SKIN, BUILT_IN: [...BUILT_IN], FLAG_KEYS, COLOR_KEYS, enabled, crewOf, validateSprite, registerSprite, renderSprite, setSpriteEnabled };   // see SPRITES.md
+window.Researchers = { reach, ARM: [ARM_UP, ARM_FORE], stages, crews, guides, guideFor, ROSTER, makeLook, ACTIONS, Stage, FlowStage, Tour, TOUR, TOUR_ACTS, BEATS, Crew, Researcher, rescan, tick, QUIPS,
+  PARTS, SLOTS, MAP_BOX, PROP_BOX, FACE_BOX, CAST, CYBORGS, SKIN, BUILT_IN: [...BUILT_IN], FLAG_KEYS, COLOR_KEYS, enabled, crewOf, validateSprite, registerSprite, renderSprite, setSpriteEnabled };   // see SPRITES.md
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
