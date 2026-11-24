@@ -21,8 +21,8 @@
  * moves to another mission, or passes to the other worker, they say a closing line and walk off, and a new
  * one walks in for whatever started, at least 10 seconds after (GAP_MIN) and in its turn among the page's
  * arrivals. assets/flow.js says when that happens with a "flowchange" event.
- * On the published About page the strip plays a scene instead (Tour, #139): one made-up mission carried from box
- * to box by two researchers following a storyboard (TOUR), a third bringing it to Publish.
+ * On the published About page the strip plays a scene instead (Tour, #139, #155): a researcher on every agent's
+ * box (STATIONS), and made-up missions passed from box to box as sheets of paper (ROUTES), several at once.
  * Purely decorative: canvases are aria-hidden, ignore the pointer, and nothing here talks to the server.
  */
 (() => {
@@ -169,6 +169,9 @@ const BUILT_IN = new Set(CAST);
 // A page can add sprites and switch any off before loading this script:
 // window.RESEARCHER_SPRITES = { add: { "custom-sprite-1": spec, ... }, off: ["pip", ...] }.
 const SPRITE_CONFIG = window.RESEARCHER_SPRITES || {};
+// What a sprite can wear on its back: assets/backs.json, which the page hands over as window.RESEARCHER_BACKS
+// before this script loads. Each piece is checked once, below; `back` in a spec names one, or null for none.
+const BACKS = {}, PACK = "#6b4a2e";               // PACK: a pack-coloured piece's colour when the sprite has none
 const OFF = new Set(Array.isArray(SPRITE_CONFIG.off) ? SPRITE_CONFIG.off : []);
 const enabled = () => CAST.filter(k => !OFF.has(k));
 const crewOf = worker => {                        // a crew never ends up empty: switching all of it off is ignored
@@ -212,6 +215,14 @@ function makeLook(kind, seed) {
   a.shoes = one(t.shoes) || "#2b2b30"; a.shoesD = shade(a.shoes, 0.75); a.sneaker = lum(a.shoes) > 170;
   a.legsStyle = t.legs || "pants"; a.skirt = one(t.skirt) || "#2f3640";
   a.pack = one(t.pack) || null;
+  // What's worn on the back (assets/backs.json): the spec's `back`, else a backpack for anyone with a pack colour.
+  a.back = "back" in t ? t.back : a.pack ? "backpack" : null;
+  if (!BACKS[a.back]) a.back = null;
+  if (a.back) {                                                  // the piece's own colours, and its pack-coloured letters
+    const piece = BACKS[a.back], c = a.pack || PACK;
+    a.backPal = Object.assign({}, piece.pal);
+    for (const [ch, f] of Object.entries(piece.tint || {})) a.backPal[ch] = f === 1 ? c : shade(c, f);
+  }
   a.tie = one(t.tie) || null; a.bow = one(t.bow) || null;
   a.hijab = one(t.hijab) || "#1f3a5f"; a.hijabD = shade(a.hijab, 0.72); a.hijabL = shade(a.hijab, 1.45);
   a.veilPal = { j: a.hijab, J: a.hijabD, L: a.hijabL, u: mix(a.hijab, "#ffffff", 0.72), g: "#e9c46a" };
@@ -382,7 +393,7 @@ function drawTorso(P, a, g) {
     }
   };
   const tie = (c, len) => { P(CX, sh - len, 1, len, c); P(CX - 1, sh - 1, 3, 1, c); P(CX, sh - 1, 1, 1, shade(c, 0.72)); P(CX, sh - 3, 1, 1, shade(c, 1.25)); };
-  const strap = () => { if (a.pack) { P(tr - 4, hip + 2, 2, T - 2, shade(a.pack, 0.9)); P(tr - 4, hip + 2, 1, T - 2, shade(a.pack, 0.68)); P(tr - 4, sh - 4, 2, 1, "#d8b36a"); } };
+  const strap = () => { if (a.back && BACKS[a.back].strap) { const c = a.pack || PACK; P(tr - 4, hip + 2, 2, T - 2, shade(c, 0.9)); P(tr - 4, hip + 2, 1, T - 2, shade(c, 0.68)); P(tr - 4, sh - 4, 2, 1, "#d8b36a"); } };
   switch (a.outfit) {
     case "labcoat": {
       const c = a.coat, cd = a.coatD, b = shell(c, 5, cd), line = soft(c);
@@ -524,16 +535,10 @@ function drawSkirt(P, a, g) {                                       // an A-line
   P(tl - 1, hip - 7, W + 2, 1, shade(c, 1.3));                      // a light band at the hem
 }
 
-function drawBack(P, a, g) {                                      // things worn behind the body
-  if (a.pack) {
-    const c = a.pack, cd = shade(c, 0.74), cl = shade(c, 1.25), x = g.tl - 5, y = g.hip + 1, h = g.sh - g.hip - 2;
-    pill(P, x, y, 5, h, c);
-    P(x, y, 1, h, cd); P(x, y, 5, 1, cd);
-    P(x, y + h - 3, 5, 1, cd); P(x + 1, y + h - 2, 3, 1, cl);     // the top flap catches the light
-    P(x + 1, y + 1, 3, 3, cd); P(x + 1, y + 3, 3, 1, cl);         // a front pocket
-    P(x + 2, y + h - 4, 1, 2, "#e0b64a");                          // a buckle
-    P(x + 2, y + h, 2, 1, cd);                                     // the grab loop
-  }
+function drawBack(P, a, g, t) {                                   // the piece worn on the back (assets/backs.json)
+  if (!a.back) return;
+  const piece = BACKS[a.back];
+  paintMap(P, a, mapRows(piece, t), piece.at[0], g.hip + piece.at[1], a.backPal);
 }
 
 // The head is a 14x13 rounded block (the silhouette outline included) on a short neck: big for the body, the
@@ -948,7 +953,7 @@ function drawBody(P, a, p, t) {
   g.top = g.head + 11;
   g.crown = g.head + crownOf(a);
   g.handB = drawArm(P, a, p.armB, g, true);
-  drawBack(P, a, g);
+  drawBack(P, a, g, t);
   drawMaps(P, a, g, "back", t);
   if (p.sit) {                                    // on the floor, knees up a little
     const kx = Math.round(a.legs * 0.55), fx = Math.round(a.legs * 0.85);
@@ -3065,126 +3070,120 @@ class FlowStage extends Stage {
   }
 }
 
-// ---------- the About page's strip: one mission, a storyboard on a loop (#139) ----------
+// ---------- the About page's strip: a researcher on every agent's box, missions passed on as paper (#139, #155) ----------
 
-// On the published About page (#flow[data-tour]) the strip plays a short scene instead of following real work.
-// One made-up mission runs the whole line, chased from box to box by two researchers: P, from the Principal
-// Investigator's crew, and R, from the Research Assistant's. A third, N, brings it to Publish once they have
-// gone, so the strip never holds more than two. Each box lights when an actor's "light" beat reaches it (a
-// "tourstep" event, which assets/about.js turns into Flow.apply), so the lights follow the sprites, never a clock.
-// A new pair plays every loop.
-//
-// TOUR is the storyboard: each actor's beats, played in order. A beat is data:
-//   ["enter", step, side, via]   walk in from the left or right edge (onto `via` first, if given) to the step
-//   ["go", step, {pace, beside}] go there: along the lane hopping the gaps, leaping down where the strip turns.
-//                                pace: walk, run (the default) or sprint; beside: stop next to that actor
-//   ["light", step]              the work reaches this box: it lights (a review shows one waiting)
-//   ["approve", step]            the review's count clears
-//   ["say", text, hold]          a speech bubble; hold: wait until it has been read
-//   ["do", bit, opts]            a bit (ACTIONS, or the tour's own TOUR_BITS); opts set its state (dur, ok, ...)
-//   ["wait", seconds, bit]       stand there doing a hold bit: stand, tap, sleep or jitter
-//   ["until", signal, bit, lines] the same until another actor's ["signal", name]; lines: [[seconds, text], ...]
-//   ["signal", name]  ["face", actor]  ["cue", actor] (on once the others are gone)  ["exit", side]
-const TOUR_PACE = { walk: 42, run: 105, sprint: 175 };   // px per second
-const TOUR_GAP = 2.5;                                    // seconds of dark strip between loops
-const TOUR_CAST = { P: "pi", R: "assistant", N: "desk" };   // whose crew each actor comes from (desk: anyone)
-const TOUR_FIRST = ["P", "R"];                           // on at the start; the rest wait for their cue
-const TOUR = {
-  P: [
-    ["enter", "theorist", "left"],
-    ["light", "theorist"], ["say", "What ties these together?"], ["do", "chalkboard", { dur: 4.4, q: false }],
-    ["go", "theorist_check"], ["light", "theorist_check"], ["say", "Questions only. Check!", true],
-    ["go", "finder"], ["light", "finder"], ["say", "Any new leads out there?"], ["do", "telescope", { dur: 3.2, turn: false }],
-    ["go", "finder_check"], ["light", "finder_check"], ["say", "Every lead backed by a real page.", true],
-    ["go", "epic_review"], ["light", "epic_review"], ["say", "New epic! Your call, editor.", true], ["wait", 0.9],
-    ["approve", "epic_review"], ["say", "Approved!"], ["do", "cheer"],
-    ["go", "sources", { beside: "R" }], ["light", "sources"], ["face", "R"],
-    ["say", "Sources! You're up.", true], ["wait", 0.5, "stand"],
-    ["say", "...Hello?", true], ["wait", 0.5, "stand"],
-    ["do", "shout", { text: "WAKE UP!" }], ["signal", "wake"],
-    ["until", "awake"],
-    ["wait", 0.8], ["go", "brief"],
-    ["until", "sprint", "tap", [[0.4, "Any minute now..."], [3.6, "The editor's waiting..."]]],
-    ["say", "We're going to be late!"], ["until", "sources", "tap"],
-    ["face", "R"], ["say", "With two seconds to spare.", true],
-    ["light", "brief"], ["do", "notes", { dur: 3.6, toss: false }], ["say", "Facts first."], ["do", "notes", { dur: 2.4, toss: true }],
-    ["go", "source_check"], ["light", "source_check"], ["say", "Show me the source."],
-    ["do", "search", { dur: 2.6, sniff: false, found: true }],
-    ["go", "brief_review"], ["light", "brief_review"], ["say", "Brief's on your desk!", true], ["wait", 0.9],
-    ["approve", "brief_review"], ["say", "Approved! On to the article."], ["do", "cheer"],
-    ["go", "writer"], ["light", "writer"], ["signal", "writing"], ["say", "Words, assemble!"], ["do", "typing", { dur: 4.8 }],
-    ["go", "article_check"], ["light", "article_check"], ["say", "Fact or possibility?"],
-    ["do", "search", { dur: 2.6, sniff: false, found: true }],
-    ["go", "article_rating", { beside: "R" }], ["light", "article_rating"], ["face", "R"], ["say", "All yours.", true],
-    ["signal", "article"],
-    ["until", "eager"], ["say", "Read it first.", true], ["signal", "read"],
-    ["go", "article_review", { pace: "walk" }],
-    ["until", "approved"], ["do", "cheer"], ["face", "R"], ["say", "Coffee?", true], ["signal", "coffee"],
-    ["cue", "N"], ["wait", 1.4], ["exit", "right"],
-  ],
-  R: [
-    ["enter", "sources", "right", "epic_review"],
-    ["say", "I'll wait at Sources. Plenty of time.", true], ["do", "yawn"],
-    ["until", "wake", "sleep"],
-    ["do", "jolt"], ["say", "I'm up! I'm up!", true], ["signal", "awake"],
-    ["say", "Coffee first."], ["do", "coffee"],
-    ["say", "Let's dig!"], ["do", "dig", { dur: 4.4 }],
-    ["say", "47 tabs open!"], ["do", "search", { dur: 2.2, sniff: false, found: true }],
-    ["signal", "sprint"], ["go", "brief", { pace: "sprint", beside: "P" }], ["do", "skid"], ["do", "hand"],
-    ["say", "Made it! Sources!", true], ["signal", "sources"],
-    ["wait", 2.4], ["say", "I'll be at Rating. Wide awake this time!"],
-    ["go", "article_rating"],
-    ["until", "writing", "stand"],
-    ["do", "nod", { dur: 3.1 }], ["say", "Nope! Not again!", true], ["do", "coffee", { dur: 2.8 }],
-    ["until", "article", "jitter"],
-    ["say", "Ten out of ten!", true], ["signal", "eager"],
-    ["until", "read", "jitter"],
-    ["do", "read", { dur: 2.8, slam: false }],
-    ["say", "Logic 9, intrigue 8, sources 9."], ["do", "chart", { up: true, dur: 3.6 }],
-    ["go", "rating_check"], ["light", "rating_check"], ["say", "26 of 30. It passes!", true],
-    ["go", "article_review", { beside: "P" }], ["light", "article_review"],
-    ["say", "Over to you, editor: publish it?", true], ["wait", 0.9],
-    ["approve", "article_review"], ["signal", "approved"], ["do", "cheer"],
-    ["until", "coffee"], ["say", "Always.", true], ["exit", "right"],
-  ],
-  N: [
-    ["enter", "publisher", "left"], ["light", "publisher"], ["say", "Hot off the press!"], ["do", "papers"],
-    ["wait", 1.6, "stand"], ["say", "Extra, extra!"], ["exit", "left"],
-  ],
+// On the published About page (#flow[data-tour]) the strip plays a scene instead of following real work. Every
+// agent's box has a researcher of its own (STATIONS: whose crew), and made-up missions travel the line as sheets of
+// paper passed from box to box (ROUTES). A researcher works on the paper that reaches them, says a line, and tosses
+// it on: over to the next agent, onto a code check (it rests there a moment while the check lights) or onto a
+// review (which counts it until it is approved). With nothing to do they nap on their box, or walk off its side and
+// walk back in from the side when the next paper comes, sometimes a different person. Several papers are on the
+// line at once, so most boxes are busy: the long trip runs every box once, and the loops pass theirs back between
+// two boxes before it goes on. A box lights while a paper is on it (a "tourstep" event, which assets/about.js turns
+// into Flow.apply), so the lights follow the paper, never a clock.
+const STATIONS = { theorist: "pi", finder: "assistant", sources: "assistant", brief: "pi", outreach: "pi",
+                   writer: "pi", article_rating: "assistant", publisher: "desk" };   // desk: anyone
+const PAPER_SPEED = 240;                                 // px per second through the air
+const HOLD = { check: 1.1, replies: 3, human: 2.4 };     // seconds a paper rests on a check, the reply wait, a review
+const NAP = 0.55;                                        // chance an idle researcher naps on their box, else walks off
+const WALK_ON = 34;                                      // px per second walking on or off their box
+const TOUR_GAP = 2.5;                                    // seconds before the long trip starts again
+const LOOP_GAP = 3;                                      // seconds before a loop's next paper
+const LOOP_STAGGER = 6;                                  // seconds between the first papers of each trip
+const TOUR_VARS = {                                      // made-up people and reasons only: never a real person
+  replier: ["Dr. Okafor", "The harbour master", "Professor Lindqvist", "A county clerk", "Dr. Ruiz",
+            "The retired inspector", "Ms. Abara", "The town archivist", "A night-shift nurse", "Captain Ferreira"],
+  pattern: ["Three missions, one shell company?", "Same consultant, four cities?", "Why do these dates line up?",
+            "Who funds all three reports?", "Is this the same contract twice?"],
+  reason: ["Logic 6: the timeline doesn't hold.", "Sources 5: two blogs and a forum.", "Intrigue 4: I nodded off.",
+           "Logic 5: the quote doesn't say that.", "Sources 6: where's the filing?"],
+};
+const WAKE = ["I'm up! I'm up!", "Five more minutes...", "Who, me? On it!", "Was I asleep? No."];
+// ROUTES: each paper's trip, one stop per box in order: [step, ...beats]. At an agent's box the beats are what its
+// researcher does with it: ["say", text, hold] (hold: until it has been said and read), ["do", bit, opts] (a bit of
+// ACTIONS or TOUR_BITS; opts set its state) or ["wait", seconds, bit]. A check or a review takes no beats. A stop on
+// an earlier box sends the paper back there. A say's {name} is filled from TOUR_VARS, one pick per paper. The
+// paper is filed at its last box, and a new one starts the trip again; its corner is the trip's colour (ink).
+const ROUTES = {
+  tour: { ink: "#e03131", stops: [
+    ["theorist", ["say", "What ties these together?"], ["do", "chalkboard", { dur: 4.4, q: false }]],
+    ["theorist_check"],
+    ["finder", ["say", "Any new leads out there?"], ["do", "telescope", { dur: 3.2, turn: false }], ["say", "Found one!", true]],
+    ["finder_check"],
+    ["epic_review"],
+    ["sources", ["say", "Approved! Let's dig."], ["do", "dig", { dur: 4 }], ["say", "47 tabs open!"],
+     ["do", "search", { dur: 2.2, sniff: false, found: true }]],
+    ["brief", ["say", "Facts first."], ["do", "notes", { dur: 3.6, toss: false }]],
+    ["source_check"],
+    ["brief_review"],
+    ["outreach", ["say", "Who was there? Let's ask."], ["do", "plane"]],
+    ["outreach_check"],
+    ["replies"],
+    ["writer", ["say", "{replier} wrote back!"], ["do", "typing", { dur: 4.4 }]],
+    ["article_check"],
+    ["article_rating", ["do", "read", { dur: 2.8, slam: false }], ["say", "Logic 9, intrigue 8, sources 9."],
+     ["do", "chart", { up: true, dur: 3.2 }]],
+    ["rating_check"],
+    ["article_review"],
+    ["publisher", ["say", "Hot off the press!"], ["do", "papers"], ["say", "Extra, extra!"]],
+  ] },
+  theorist: { ink: "#9c36b5", stops: [                   // Theorist <-> Finder: one more angle, then a new epic to review
+    ["theorist", ["say", "{pattern}"], ["do", "corkboard"]],
+    ["theorist_check"],
+    ["finder", ["say", "New questions! Scanning..."], ["do", "telescope", { dur: 3, turn: false }], ["say", "Two leads for you!", true]],
+    ["theorist", ["do", "read", { dur: 2.2, slam: false }], ["say", "We've asked that one. Another angle?", true]],
+    ["finder", ["say", "Looking further out."], ["do", "globe"], ["say", "Nobody's asked this one!", true]],
+    ["finder_check"],
+    ["epic_review"],
+  ] },
+  sources: { ink: "#1971c2", stops: [                    // Sources <-> Brief: one more source, then on to the check
+    ["sources", ["say", "New lead. Let's dig!"], ["do", "dig", { dur: 3.4 }], ["say", "Three good pages!", true]],
+    ["brief", ["do", "notes", { dur: 2.6, toss: false }], ["say", "Need one more source!", true]],
+    ["sources", ["say", "One more, coming up."], ["do", "read", { dur: 2.4, slam: false }],
+     ["do", "search", { dur: 1.8, sniff: false, found: true }], ["say", "Straight from the archive!", true]],
+    ["brief", ["say", "Now we're talking."], ["do", "typing", { dur: 3 }]],
+    ["source_check"],
+    ["brief_review"],
+  ] },
+  outreach: { ink: "#2f9e44", stops: [                   // Outreach -> Publish, the rater turning the first draft down
+    ["outreach", ["say", "Who'd know first-hand?"], ["do", "typing", { dur: 2.4 }], ["do", "plane"]],
+    ["outreach_check"],
+    ["replies"],
+    ["writer", ["say", "{replier} replied! We got the quote!"], ["do", "typing", { dur: 3.4 }]],
+    ["article_check"],
+    ["article_rating", ["do", "read", { dur: 2.6, slam: false }], ["say", "{reason}", true], ["do", "stamp", { ok: false }],
+     ["say", "Back you go!"]],
+    ["writer", ["say", "Fair. Rewriting."], ["do", "typing", { dur: 3 }]],
+    ["article_check"],
+    ["article_rating", ["do", "read", { dur: 2.2, slam: false }], ["do", "stamp", { ok: true }], ["say", "Much better."]],
+    ["rating_check"],
+    ["article_review"],
+    ["publisher", ["say", "Another one out!"], ["do", "papers"]],
+  ] },
 };
 
-// The tour's own bits, beside the researchers' ACTIONS. A hold (wait, until) is a bit too.
+// The tour's own bits, beside the researchers' ACTIONS. A hold is a bit too.
 const zz = (r, s) => { if (Math.floor(s.t / 0.9) !== Math.floor((s.t - 0.017) / 0.9)) r.stage.z(r.x + r.face * 4, r.headTop - 4); };
 const TOUR_BITS = {
-  trek: {                                        // run the legs a "go" planned: along a lane, or a leap down to the next
-    init(r, o) { return { legs: o.legs, i: 0, speed: o.speed, sprint: o.speed >= TOUR_PACE.sprint, exit: o.exit, to: o.to, beside: o.beside }; },
+  stroll: {                                      // walk onto the box from its side (fading in), or off it (fading out)
+    init(r, o) { return { to: o.to, off: !!o.off, from: r.x }; },
     run(r, s, dt) {
-      const leg = s.legs[s.i];
-      if (!leg) {
-        r.y = 0; s.done = true;
-        if (s.exit) r.gone = true;
+      const span = Math.max(1, Math.abs(s.to - s.from)), left = Math.abs(s.to - r.x);
+      r.alpha = clamp((s.off ? left : span - left) / 14, 0, 1);
+      if (stepToward(r, s, s.to, dt, WALK_ON)) {
+        s.done = true; r.alpha = s.off ? 0 : 1;
+        if (s.off) r.gone = true;
         return stand({ carry: true });
       }
-      if (leg.leap) {
-        if (leg.t == null) {
-          leg.t = 0; leg.x0 = r.x; leg.g0 = r.stage.ground;
-          r.stage.ground = leg.ground; r.stage.platforms = leg.platforms;
-          leg.dur = clamp(Math.hypot(leg.x - leg.x0, leg.ground - leg.g0) / 150, 0.45, 0.85);
-          r.face = Math.sign(leg.x - leg.x0) || r.face;
-        }
-        leg.t += dt;
-        const k = clamp(leg.t / leg.dur, 0, 1);
-        r.x = leg.x0 + (leg.x - leg.x0) * k;
-        r.y = (leg.ground - leg.g0) * (1 - k) + 64 * k * (1 - k);   // from the old floor, over a little arc, to the new
-        if (r.bubble) r.bubble.y = null;         // a bubble only ever drifts up; on the way down it follows the speaker
-        if (k >= 1) { r.y = 0; r.stage.dust(r.x, 3); s.i++; s.dist = 0; }
-        return stand({ armF: ["up", 0], armB: ["up", 0], legF: 2, legB: -2, eyes: "wide", mouth: "o" });
-      }
-      r.alpha = r.stage.edgeFade(r.x);
-      if (stepToward(r, s, leg.x, dt, s.speed)) { r.y = 0; s.i++; return stand({ carry: true }); }
-      r.y = r.stage.hop(r.x);
-      return stand(Object.assign(walkPose(r, s.dist || 0), { carry: !s.sprint },
-        s.sprint ? { eyes: "wide", mouth: "grin", armF: ["high", 0], armB: ["low", 0] } : {}));
+      return stand(Object.assign(walkPose(r, s.dist || 0), { carry: true }));
+    },
+  },
+  toss: {                                        // pass the paper on: a flick of the wrist, and away it goes
+    init() { return { dur: 0.75 }; },
+    run(r, s) {
+      if (s.t > 0.3 && !s.thrown) { s.thrown = true; r.tour.pass(r); }
+      if (s.t >= s.dur) s.done = true;
+      return stand({ armF: [s.thrown ? "up" : "forward", 0], mouth: "smile", eyes: "happy" });
     },
   },
   hold: {                                        // stand there until the time is up or a signal comes
@@ -3196,7 +3195,8 @@ const TOUR_BITS = {
     },
     run(r, s) {
       while (s.lines.length && s.t >= s.lines[0][0]) r.say(s.lines.shift()[1]);
-      const over = s.until ? r.tour.signals.has(s.until) : s.t >= (s.dur || 0);
+      const over = s.until ? s.until(r)
+        : s.speech ? !r.queued && (!r.bubble || r.bubble.t >= s.speech) : s.t >= (s.dur || 0);
       if (over) { s.done = true; if (s.bx != null) r.x = s.bx; }
       if (s.bit === "sleep") {
         zz(r, s);
@@ -3280,181 +3280,283 @@ const TOUR_BITS = {
 };
 const TOUR_ACTS = Object.assign({}, ACTIONS, TOUR_BITS);
 
-// What each beat does. True when it started a bit, so the actor waits for that bit to end.
+// What a stop's beat does. True when it started a bit, so the researcher waits for that bit to end.
 const BEATS = {
-  enter(r, step, side, via) {
-    const t = r.tour, start = via ? t.el(via) : t.el(step);
-    if (!t.el(step)) return false;
-    r.place(via || step, side === "right" ? t.W + EDGE : -EDGE);
-    const legs = via ? [{ x: t.mid(start) }].concat(t.path(via, step, r)) : [{ x: t.spot(step, r) }];
-    r.at = step;
-    r.begin("trek", { legs, speed: TOUR_PACE.walk * 1.4, to: step });
-    return true;
-  },
-  go(r, step, o = {}) {
-    const t = r.tour;
-    if (!t.el(step)) return false;
-    const beside = o.beside && t.actor(o.beside), legs = t.path(r.at, step, r, beside);
-    r.at = step;
-    if (!legs.length) return false;
-    r.begin("trek", { legs, speed: TOUR_PACE[o.pace || "run"], to: step, beside });
-    return true;
-  },
-  light(r, step) { r.tour.light(step, r.worker, 1); return false; },
-  approve(r, step) { r.tour.light(step, r.worker, 0); return false; },
   say(r, text, hold) {
+    const vars = (r.paper && r.paper.vars) || {};
+    text = text.replace(/\{(\w+)\}/g, (m, k) => vars[k] || m);
     r.say(text, readTime(text) + 0.4);
     if (!hold) return false;
-    r.begin("hold", { dur: readTime(text) * 0.9 });
+    r.begin("hold", { speech: readTime(text) * 0.9 });   // until it has been said (it may wait its turn) and read
     return true;
   },
   do(r, bit, opts = {}) {
     if (!TOUR_ACTS[bit]) return false;
     r.begin(bit, opts);
-    Object.assign(r.act, opts);                  // the storyboard's settings win over the bit's dice
+    Object.assign(r.act, opts);                  // the route's settings win over the bit's dice
     return true;
   },
-  wait(r, dur, bit, lines) { r.begin("hold", { dur, bit, lines }); return true; },
-  until(r, signal, bit, lines) {
-    if (r.tour.signals.has(signal)) return false;
-    r.begin("hold", { until: signal, bit, lines });
-    return true;
-  },
-  signal(r, name) { r.tour.signals.add(name); return false; },
-  face(r, who) { const o = r.tour.actor(who); if (o) r.face = Math.sign(o.x - r.x) || r.face; return false; },
-  cue(r, who) { r.tour.queue.push(who); return false; },
-  exit(r, side) {
-    r.leaving = true;
-    r.begin("trek", { legs: [r.tour.edge(side)], speed: TOUR_PACE.walk * 1.4, exit: side });
-    return true;
-  },
+  wait(r, dur, bit) { r.begin("hold", { dur, bit }); return true; },
 };
 
-// A researcher who plays their beats instead of picking bits at random. The storyboard does all the talking.
-class Actor extends Researcher {
-  constructor(tour, id, rec) {
-    const slot = Object.create(tour);           // their own floor: the row they stand on, and its boxes to hop
-    slot.ground = tour.ground; slot.platforms = null;
-    super(slot, rec, { x: -EDGE, face: 1 });
-    this.tour = tour; this.id = id; this.worker = TOUR_CAST[id];
-    this.beats = (TOUR[id] || []).slice(); this.at = null;
-    this.quipIn = Infinity; this.alpha = 0;
-    this.play();
+// The researcher on one agent's box. They take the papers that reach it one at a time, do that stop's beats, and
+// pass each on; then nap on the box until the next comes, or walk off its side (a new paper brings someone back).
+class Station extends Researcher {
+  constructor(tour, slot, rec, walk) {
+    const el = tour.el(slot.step), stage = Object.create(tour);   // their own floor: their box's row
+    stage.ground = tour.groundOf(el); stage.platforms = tour.row(el);
+    const side = Math.random() < 0.5 ? -1 : 1;
+    super(stage, rec, { x: walk ? tour.side(el, side) : tour.mid(el), face: walk ? -side : (Math.random() < 0.5 ? 1 : -1) });
+    this.tour = tour; this.slot = slot; this.step = slot.step; this.worker = slot.worker; this.key = "station:" + slot.step;
+    this.beats = []; this.paper = null; this.quipIn = Infinity;
+    if (walk) { this.alpha = 0; this.begin("stroll", { to: tour.mid(el) }); }
+    else this.nap();
   }
   get acts() { return TOUR_ACTS; }
-  quip() {}
+  quip() {}                                      // the routes do all the talking
   line() {}
-  place(step, x) {                               // stand on this step's row, at x
-    const el = this.tour.el(step);
-    this.stage.ground = this.tour.groundOf(el); this.stage.platforms = this.tour.row(el);
-    this.x = x; this.y = 0; this.at = step;
+  // Turns to speak: a line that would land on someone else's bubble waits until theirs is gone, then is said.
+  say(text, dur) {
+    if (this.tour.crowded(this, text)) this.queued = { text, dur };
+    else { this.queued = null; super.say(text, dur); }
   }
-  chooseNext() {
-    this.next = null;                            // a bit's own follow-up (papers -> walk) isn't in the script
-    this.play();
+  update(dt) {
+    if (this.queued && !this.tour.crowded(this, this.queued.text)) { const q = this.queued; this.queued = null; super.say(q.text, q.dur); }
+    super.update(dt);
   }
-  play() {
+  nap() { this.napping = true; this.begin("hold", { bit: "sleep", until: r => r.slot.queue.length > 0 }); }
+  take(p) {
+    const woke = this.napping, cue = woke && this.rand() < 0.4 ? [["do", "coffee", { dur: 2.2 }]] : [];
+    this.napping = false; this.paper = p; p.state = "held"; p.by = this;
+    if (p.x != null) this.face = Math.sign(p.x - this.x) || this.face;
+    this.tour.light(this.step, this.worker, 1, p.id);
+    this.beats = (woke ? [["do", "jolt"], ["say", pick(this.rand, WAKE), true]].concat(cue) : []).concat(p.route.stops[p.i].slice(1));
+  }
+  chooseNext() {                                 // a bit ended: the next beat, pass the paper on, the next paper, or rest
+    this.next = null;
+    if (this.leaving) return;
     while (this.beats.length) {
       const [op, ...args] = this.beats.shift();
       if (BEATS[op] && BEATS[op](this, ...args)) return;
     }
-    this.begin("hold", { until: "never" });      // out of beats: stand quietly until the loop ends
+    const p = this.paper;
+    if (p) {
+      const on = p.route.stops[p.i + 1], el = on && this.tour.el(on[0]);
+      if (!el) { this.tour.pass(this); return this.chooseNext(); }   // its last box: filed here
+      this.face = Math.sign(this.tour.mid(el) - this.x) || this.face;
+      return this.begin("toss");
+    }
+    const q = this.slot.queue.shift();
+    if (q) { this.take(q); return this.chooseNext(); }
+    if (this.rand() < NAP) return this.nap();
+    const el = this.tour.el(this.step);
+    this.leaving = true;
+    this.begin("stroll", { to: this.tour.side(el, this.x < this.tour.mid(el) ? -1 : 1), off: true });
   }
 }
 
 class Tour extends FlowStage {
-  constructor(host) { super(host); this.hold = 2; }   // the strip always counts as two on stage
+  // While it is in view the strip takes every seat on the page, so the step cards below wait their turn (#155);
+  // scrolled away it takes none.
+  seats() { return this.seen === false ? 0 : MAX_ON_STAGE; }
+  get actors() { return Object.values(this.slots || {}).map(s => s.actor).filter(Boolean); }
   el(step) { return step && this.host.querySelector(`[data-step="${step}"]`); }
   keys() { return [...this.host.querySelectorAll("[data-step]")].map(e => e.dataset.step); }   // flow order
   groundOf(el) { return el.offsetTop - 1; }
   mid(el) { return el.offsetLeft + el.offsetWidth / 2; }
-  row(el) {                                      // the boxes on this row, reviews too: they stand on those as well
+  side(el, dir) { return dir < 0 ? el.offsetLeft - 10 : el.offsetLeft + el.offsetWidth + 10; }   // just off a box's edge
+  row(el) {                                      // the boxes on this row, reviews too
     const top = el.offsetTop;
     return [...this.host.querySelectorAll(".step, .check, .human")].filter(n => Math.abs(n.offsetTop - top) < 4)
       .map(n => [n.offsetLeft, n.offsetLeft + n.offsetWidth]).sort((a, b) => a[0] - b[0]);
   }
-  range() { return [6, (this.W || 200) - 6]; }   // the whole strip: they walk in and off its edges
-  actor(id) { return this.actors.find(a => a.id === id); }
-  spot(step, r, beside) {                        // where to stop on a step: its middle, or next to someone there
-    const el = this.el(step), m = this.mid(el);
-    if (beside && beside.at === step && !beside.leaving) {
-      const dir = Math.sign(beside.x - r.x) || 1;
-      return beside.x - dir * 26;
-    }
-    return el.classList.contains("step") ? m + between(r.rand, -6, 6) : m;
+  range() { return [-40, (this.W || 200) + 40]; }   // they step off their box's side, even at the strip's ends
+  boxKind(step) {
+    const el = this.el(step);
+    return !el ? null : step in STATIONS ? "station" : el.classList.contains("human") ? "human" : "check";
   }
-  // The legs from one step to another: along a row it's one run (the hops come with it); a box on another row is a
-  // leap down to it, from wherever the run got to (in the wide strip that's the review where the lane turns).
-  path(from, to, r, beside) {
-    const keys = this.keys(), j = keys.indexOf(to), legs = [];
-    let i = keys.indexOf(from), g = r.stage.ground;
-    if (i < 0 || i > j) i = j - 1;
-    for (let k = i + 1; k <= j; k++) {
-      const el = this.el(keys[k]), eg = this.groundOf(el), x = k === j ? this.spot(to, r, beside) : this.mid(el);
-      if (Math.abs(eg - g) > 3) { legs.push({ leap: true, x, ground: eg, platforms: this.row(el) }); g = eg; }
-      else if (k === j) legs.push({ x });
-    }
-    return legs;
+  // One box for one paper (who: its id; step null: dark); with no paper, a dark strip for everyone.
+  light(step, worker, waiting, who) {
+    document.dispatchEvent(new CustomEvent("tourstep", { detail: { step, worker, waiting, who: who || null } }));
   }
-  light(step, worker, waiting) {
-    document.dispatchEvent(new CustomEvent("tourstep", { detail: { step, worker, waiting } }));
+  bubbleW(text) {                                // as wide as drawBubble will draw it
+    const ctx = this.ctx;
+    ctx.font = BUBBLE_FONT;
+    const lines = wrapText(ctx, text, Math.min(BUBBLE_MAX, this.cssW - 16));
+    return Math.max(...lines.map(l => Math.ceil(ctx.measureText(l).width))) + 12;
   }
-  edge(side) { return { x: side === "right" ? this.W + EDGE + 4 : -EDGE - 4 }; }
-  // A resize moves every box: whoever is on the way somewhere lands there at once, the rest step back onto their box.
+  // Would this line's bubble land on another researcher's? Only someone on the same row, near enough, talking now.
+  crowded(r, text) {
+    const w = this.bubbleW(text);
+    return this.actors.some(a => a !== r && a.bubble && a.bubble.t < a.bubble.dur - 0.15 && a.alpha > 0 &&
+      Math.abs(a.stage.ground - r.stage.ground) < 30 && Math.abs(a.x - r.x) < (w + this.bubbleW(a.bubble.text)) / 2 + 6);
+  }
+  // A resize moves every box: researchers stand back on theirs (one walking off is gone), papers find their box.
   layout() {
     super.layout();
-    for (const a of this.actors || []) {
-      const s = a.act, el = this.el(a.at);
-      if (s && s.name === "trek" && s.exit) { s.legs = [this.edge(s.exit)]; s.i = 0; continue; }
-      if (!el) continue;
-      if (s && s.name === "trek") { a.place(a.at, this.spot(a.at, a, s.beside)); a.alpha = 1; s.legs = []; continue; }
+    for (const s of Object.values(this.slots || {})) {
+      const a = s.actor, el = this.el(s.step);
+      if (!a || !el) continue;
       a.stage.ground = this.groundOf(el); a.stage.platforms = this.row(el);
-      a.x = clamp(a.x, el.offsetLeft - 24, el.offsetLeft + el.offsetWidth + 24);
+      if (a.act && a.act.name === "stroll") {
+        if (a.act.off) { a.gone = true; continue; }
+        a.act.to = this.mid(el); a.alpha = 1;
+      }
+      a.x = this.mid(el);
     }
   }
   schedule() {
-    this.actors = []; this.queue = []; this.signals = new Set(); this.leavers = []; this.crew = {};
-    this.running = false; this.startAt = now() + 1.2;
+    const t = now() + 1.2;
+    this.slots = {}; this.papers = []; this.leavers = []; this.crew = {}; this.begun = false;
+    this.routes = Object.entries(ROUTES).map(([name, r], i) =>
+      ({ name, stops: r.stops, ink: r.ink, gap: i ? LOOP_GAP : TOUR_GAP, startAt: t + LOOP_STAGGER * i, n: 0, paper: null }));
     if (!this.listening) {
       this.listening = true;
       document.addEventListener("tourframe", e => this.still(e.detail));
+      if (window.IntersectionObserver) {
+        new IntersectionObserver(es => {
+          const seen = es[es.length - 1].isIntersecting;
+          if (seen && this.seen === false)       // back in view: the card visitors make room
+            for (const s of stages) if (s.kind === "card" && s.resident && !s.resident.leaving) s.resident.leave();
+          this.seen = seen;
+        }).observe(this.host);
+      }
     }
   }
-  cast() { return this.actors || []; }
+  cast() { return this.actors; }
   save() {}                                      // the scene starts over on every page
-  admit() { return false; }                      // nobody walks in on the strip but the cast
+  admit() { return false; }                      // nobody walks in on the strip but its own
   change() {}                                    // it makes the changes itself
-  bring(id) {
-    const kind = nextCharacter(onStage(), crewKey(TOUR_CAST[id]));
-    const a = new Actor(this, id, { kind, seed: Math.floor(Math.random() * 2 ** 31) });
-    this.actors.push(a);
-    return a;
+  // A slot for every agent's box on the strip; some start out napping there (all, unseen, with no scene).
+  open(all) {
+    for (const [step, worker] of Object.entries(STATIONS)) {
+      if (!this.el(step) || this.slots[step]) continue;
+      const slot = this.slots[step] = { step, worker, actor: null, queue: [] };
+      if (all || Math.random() < 0.5) this.staff(slot, false);
+    }
+  }
+  staff(slot, walk) {
+    const kind = nextCharacter(onStage(), crewKey(slot.worker));
+    slot.actor = new Station(this, slot, { kind, seed: Math.floor(Math.random() * 2 ** 31) }, walk);
+  }
+  // Where a paper is: on top of its box, beside the researcher holding it, or waiting at the box's edge.
+  target(p) {
+    const step = p.route.stops[p.i][0], el = this.el(step), y = this.groundOf(el) - 1, m = this.mid(el);
+    if (p.state === "held" && p.by) return { x: p.by.x + p.by.face * 12, y };
+    if (p.state === "queued") return { x: el.offsetLeft + 10 + this.slots[step].queue.indexOf(p) * 6, y };
+    if (this.boxKind(step) === "station") return { x: m + (p.from && p.from.x < m ? -12 : 12), y };
+    return { x: m, y };
+  }
+  launch(route) {                                // a new paper drops in at the trip's first box
+    const vars = Object.fromEntries(Object.entries(TOUR_VARS).map(([k, list]) => [k, pick(Math.random, list)]));
+    const p = { id: route.name + ":" + route.n++, route, ink: route.ink, vars, i: 0 };
+    if (!this.el(route.stops[0][0])) return;
+    const to = this.target(p);
+    route.paper = p; this.papers.push(p);
+    this.fly(p, { x: to.x, y: to.y - 70 }, 0);
+  }
+  fly(p, from, arc) {
+    p.state = "fly"; p.t = 0; p.from = from; p.x = from.x; p.y = from.y;
+    const to = this.target(p), d = Math.hypot(to.x - from.x, to.y - from.y);
+    p.dur = clamp(d / PAPER_SPEED, 0.45, 1.6); p.arc = arc != null ? arc : 16 + d * 0.12;
+  }
+  arrive(p) {                                    // landed: an agent's box queues it; a check or review holds it a moment
+    const step = p.route.stops[p.i][0], kind = this.boxKind(step);
+    if (kind === "station") {
+      const slot = this.slots[step];
+      p.state = "queued"; slot.queue.push(p);
+      if (!slot.actor) this.staff(slot, true);
+      return;
+    }
+    p.state = "rest"; p.t = 0; p.hold = kind === "human" ? HOLD.human : HOLD[step] || HOLD.check;
+    this.light(step, "desk", kind === "human" ? 1 : 0, p.id);
+    this.sparkle(p.x, p.y - 4, 2);
+  }
+  onward(p, from) {                              // on to its next box, or filed where it is; this box goes dark
+    this.light(null, null, 0, p.id);
+    p.i++;
+    if (p.i < p.route.stops.length && this.el(p.route.stops[p.i][0])) return this.fly(p, from);
+    p.i = Math.min(p.i, p.route.stops.length - 1);
+    p.state = "end"; p.t = 0;
+  }
+  pass(r) {                                      // a researcher lets go of their paper
+    const p = r.paper;
+    if (!p) return;
+    r.paper = null; p.by = null;
+    this.onward(p, { x: r.x + r.face * 6, y: r.stage.ground - 22 });
+  }
+  movePaper(p, dt) {
+    p.t += dt;
+    if (p.state === "fly") {
+      const to = this.target(p), k = clamp(p.t / p.dur, 0, 1);
+      p.x = p.from.x + (to.x - p.from.x) * k;
+      p.y = p.from.y + (to.y - p.from.y) * k - p.arc * 4 * k * (1 - k);
+      if (k >= 1) this.arrive(p);
+      return;
+    }
+    if (p.state === "end") { if (p.t > 0.8) p.done = true; return; }
+    const to = this.target(p);
+    p.x = to.x; p.y = to.y;
+    if (p.state === "rest" && p.t >= p.hold) {
+      const step = p.route.stops[p.i][0];
+      if (this.boxKind(step) === "human") { this.light(step, "desk", 0, p.id); this.sparkle(p.x, p.y - 6, 4); }   // approved
+      this.onward(p, { x: p.x, y: p.y });
+    }
   }
   update(dt) {
     const t = now();
-    if (!this.running && !this.actors.length && t >= this.startAt && this.W) {
-      this.running = true; this.signals = new Set(); this.queue = [];
-      this.light(null);                          // a dark strip, and assets/about.js knows the scene drives it
-      for (const id of TOUR_FIRST) this.bring(id);
-    }
+    if (this.W && !this.begun) { this.begun = true; this.light(null); this.open(false); }   // a dark strip, and about.js knows the scene drives it
+    if (this.begun) for (const r of this.routes) if (!r.paper && t >= r.startAt) this.launch(r);
+    for (const p of this.papers) this.movePaper(p, dt);
     for (const a of this.actors) a.update(dt);
-    this.actors = this.actors.filter(a => !a.gone);
-    if (this.running && !this.actors.length) {
-      if (this.queue.length) this.bring(this.queue.shift());
-      else { this.running = false; this.light(null); this.startAt = t + TOUR_GAP; }
+    for (const s of Object.values(this.slots)) {
+      if (s.actor && s.actor.gone) s.actor = null;
+      if (!s.actor && s.queue.length) this.staff(s, true);
     }
+    for (const p of this.papers) if (p.done) { p.route.paper = null; p.route.startAt = t + p.route.gap; }
+    this.papers = this.papers.filter(p => !p.done);
     this.tick(dt);
   }
-  // Reduced motion: no scene. assets/about.js lights each step in turn and says so here; a still researcher
-  // from the right crew stands on that step.
+  draw() {
+    super.draw();
+    const ctx = this.ctx;
+    for (const p of this.papers) if (p.x != null) drawPaper(ctx, p);
+    ctx.globalAlpha = 1;
+  }
+  // Reduced motion: no scene. assets/about.js lights each step in turn and says so here; the researcher on that
+  // step's box stands there, still.
   still(d) {
     if (!REDUCE || !this.host.isConnected) return;
-    if (!this.actors.length) { this.bring("P"); this.bring("R"); }
-    const step = d && d.step, el = this.el(step);
-    const who = this.actor(d && d.worker === "assistant" ? "R" : "P");
-    for (const a of this.actors) { a.alpha = 0; a.bubble = null; }
-    if (el && who) { who.place(step, this.mid(el)); who.alpha = 1; who.begin("hold", { until: "never" }); who.update(0); }
+    this.open(true);
+    const step = d && d.step;
+    for (const s of Object.values(this.slots)) {
+      const a = s.actor;
+      if (!a) continue;
+      a.bubble = null; a.alpha = s.step === step ? 1 : 0;
+      if (s.step === step) { a.x = this.mid(this.el(step)); a.begin("hold", { until: () => false }); a.update(0); }
+    }
     this.draw();
+  }
+}
+
+// A sheet of paper: lying flat on a box, or tumbling through the air; its corner is its trip's colour.
+function drawPaper(ctx, p) {
+  const x = Math.round(p.x), up = p.state === "end" ? p.t * 12 : 0, y = Math.round(p.y - up);
+  ctx.globalAlpha = p.state === "end" ? clamp(1 - p.t / 0.8, 0, 1) : 1;
+  const flying = p.state === "fly", edge = flying && Math.floor(p.t * 9) % 3 === 2;
+  if (!flying) {                                 // flat on the box: a sheet with its corner showing
+    ctx.fillStyle = INK; ctx.fillRect(x - 8, y - 6, 16, 6);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(x - 7, y - 5, 14, 4);
+    ctx.fillStyle = "#adb5bd"; ctx.fillRect(x - 5, y - 4, 7, 1); ctx.fillRect(x - 5, y - 2, 5, 1);
+    ctx.fillStyle = p.ink; ctx.fillRect(x + 3, y - 5, 4, 2);
+  } else if (edge) {                             // edge on, mid-tumble
+    ctx.fillStyle = INK; ctx.fillRect(x - 7, y - 2, 14, 4);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(x - 6, y - 1, 12, 2);
+  } else {                                       // face on: a page of writing
+    ctx.fillStyle = INK; ctx.fillRect(x - 7, y - 9, 14, 18);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(x - 6, y - 8, 12, 16);
+    ctx.fillStyle = "#adb5bd"; for (const r of [-4, -1, 2, 5]) ctx.fillRect(x - 4, y + r, r === 5 ? 5 : 8, 1);
+    ctx.fillStyle = p.ink; ctx.fillRect(x + 1, y - 8, 5, 3);
   }
 }
 
@@ -3582,7 +3684,7 @@ function wrapText(ctx, text, max) {
 // then the card stages, longest-waiting first. Arrivals come one at a time, a random 12-20 s apart, so two
 // never walk in together and a full page fills up over about a minute.
 let nextEntry = 0;
-const onPage = () => stages.reduce((n, s) => n + Math.max(s.cast().length, s.hold || 0), 0);   // the About strip holds two seats
+const onPage = () => stages.reduce((n, s) => n + (s.seats ? s.seats() : s.cast().length), 0);   // the About strip takes its own count
 function entered() { nextEntry = Math.max(nextEntry, now() + between(Math.random, ENTRY_MIN, ENTRY_MAX)); }
 function admit() {
   const t = now();
@@ -3680,7 +3782,7 @@ const PARTS = {
 };
 const COLOR_KEYS = ["hair", "top", "shirt", "pants", "shoes", "pack", "tie", "bow", "hijab", "cap", "beanie", "pom", "skirt", "frame", "metal", "glow"];
 const FLAG_KEYS = ["lash", "lids", "bushy", "ahoge", "grin", "freckles", "pencil", "rolled"];
-const ENUM_KEYS = ["worker", "style", "head", "outfit", "face", "facial", "legs", "brow", "mouth"];
+const ENUM_KEYS = ["worker", "style", "head", "outfit", "face", "facial", "legs", "brow", "mouth", "back"];
 const SPEC_KEYS = new Set(["base", "name", "skin", "prop", "fav", "maps", "propMap", "quirk", ...COLOR_KEYS, ...FLAG_KEYS, ...ENUM_KEYS]);
 const FAV_ACTIONS = () => Object.keys(ACTIONS).filter(k => !["spawn", "despawn", "farewell", "chase", "walk", "rest", "quirk"].includes(k));
 // Where a map may reach from its anchor, as [left, bottom, right, top] in pixels (x toward the face, y up).
@@ -3745,6 +3847,31 @@ function checkQuirk(q, errors) {
     if (k.crouch !== undefined && !(Number.isInteger(k.crouch) && k.crouch >= 0 && k.crouch <= 3)) errors.push(`${at}.crouch: 0 to 3`);
   });
 }
+
+// A back piece is a map on the `back` layer with a name, plus `tint` (letters that follow the sprite's pack colour,
+// each a shade of it: 1 is the colour itself) and `strap` (a strap across the chest in that colour).
+function checkBack(piece, where) {
+  const errors = [];
+  if (!piece || typeof piece !== "object" || Array.isArray(piece)) return [`${where}: should be an object`];
+  for (const f of Object.keys(piece)) if (!["name", "at", "rows", "frames", "fps", "pal", "tint", "strap"].includes(f)) errors.push(`${where}.${f}: unknown`);
+  if (typeof piece.name !== "string" || !piece.name.trim() || piece.name.length > 24) errors.push(`${where}.name: 1 to 24 characters`);
+  if (piece.strap !== undefined && typeof piece.strap !== "boolean") errors.push(`${where}.strap: true or false`);
+  const tint = piece.tint || {}, pal = Object.assign({}, piece.pal);
+  if (typeof tint !== "object" || Array.isArray(tint)) errors.push(`${where}.tint: letters to shades of the pack colour`);
+  else for (const [ch, f] of Object.entries(tint)) {
+    if (!/^[A-Za-z0-9]$/.test(ch) || ch in SLOTS || ch in pal) errors.push(`${where}.tint: "${ch}" can't be used (one letter or digit, not a color slot or a pal letter)`);
+    if (!(Number.isFinite(f) && f >= 0.3 && f <= 1.6)) errors.push(`${where}.tint.${ch}: a shade 0.3 to 1.6`);
+    pal[ch] = "#000000";                           // stands in for the pack colour while the picture is checked
+  }
+  checkMap(Object.assign({}, piece, { pal }), where, MAP_BOX.back, errors, false);
+  return errors;
+}
+for (const [key, piece] of Object.entries(window.RESEARCHER_BACKS || {})) {
+  const errors = SPRITE_KEY.test(key) ? checkBack(piece, `backs.${key}`) : [`backs.${key}: lowercase letters, digits and dashes`];
+  if (errors.length) console.warn(`researchers: back piece ${key} skipped:`, errors.join("; "));
+  else BACKS[key] = piece;
+}
+PARTS.back = [null, ...Object.keys(BACKS)];
 
 // Checks a spec against the rules and returns { ok, errors, sprite }: sprite is the spec laid over its starting
 // sprite, ready for registerSprite or renderSprite. Errors say what to change, so a model can fix its own spec.
@@ -3856,15 +3983,14 @@ for (const [key, spec] of Object.entries(SPRITE_CONFIG.add || {})) {   // sprite
   const v = registerSprite(key, spec);
   if (!v.ok) console.warn(`researchers: sprite ${key} skipped:`, v.errors.join("; "));
 }
-// Cyborg sprites (assets/cyborgs.json, the Settings page's switch): each joins in place of the built-in it starts
-// from, which stays home; one whose original is switched off stays home too.
+// Cyborg sprites (assets/cyborgs.json, the Cyborgs row under Who visits): each joins its original's crew beside
+// everyone else; nobody is sent home for them.
 const CYBORGS = [];
 for (const [key, spec] of Object.entries(SPRITE_CONFIG.cyborgs || {})) {
   if (ROSTER[key]) continue;                      // a custom sprite already has the name
   const v = registerSprite(key, spec);
   if (!v.ok) { console.warn(`researchers: cyborg ${key} skipped:`, v.errors.join("; ")); continue; }
   CYBORGS.push(key);
-  if (OFF.has(spec.base)) OFF.add(key); else OFF.add(spec.base);
 }
 
 function boot() {
@@ -3873,7 +3999,7 @@ function boot() {
   document.addEventListener("chatguide", e => guides.forEach(g => g.show(e.detail)));
   rescan();
 }
-window.Researchers = { reach, ARM: [ARM_UP, ARM_FORE], stages, crews, guides, guideFor, ROSTER, makeLook, ACTIONS, Stage, FlowStage, Tour, TOUR, TOUR_ACTS, BEATS, Crew, Researcher, rescan, tick, QUIPS,
-  PARTS, SLOTS, MAP_BOX, PROP_BOX, FACE_BOX, CAST, CYBORGS, SKIN, BUILT_IN: [...BUILT_IN], FLAG_KEYS, COLOR_KEYS, enabled, crewOf, validateSprite, registerSprite, renderSprite, setSpriteEnabled };   // see SPRITES.md
+window.Researchers = { reach, ARM: [ARM_UP, ARM_FORE], stages, crews, guides, guideFor, ROSTER, makeLook, ACTIONS, Stage, FlowStage, Tour, Station, STATIONS, ROUTES, TOUR_VARS, TOUR_ACTS, BEATS, Crew, Researcher, rescan, tick, QUIPS,
+  PARTS, SLOTS, MAP_BOX, PROP_BOX, FACE_BOX, BACKS, checkBack, CAST, CYBORGS, SKIN, BUILT_IN: [...BUILT_IN], FLAG_KEYS, COLOR_KEYS, enabled, crewOf, validateSprite, registerSprite, renderSprite, setSpriteEnabled };   // see SPRITES.md
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
