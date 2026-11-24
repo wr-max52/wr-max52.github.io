@@ -183,7 +183,9 @@ function makeLook(kind, seed) {
   const r = rng(seed), t = ROSTER[kind] || ROSTER.aris;
   const one = v => { const c = Array.isArray(v) ? pick(r, v) : v; return typeof c === "string" && c[0] === "#" ? vivid(c) : c; };
   const a = { kind, seed, name: (LINES.names || {})[kind] || t.name, fav: t.fav || {}, worker: t.worker };
-  a.skin = vivid(SKIN[r() < 0.7 ? one(t.skin) : Math.floor(r() * SKIN.length)], 1.18);
+  // A built-in turns up in any tone now and then; a custom sprite always wears the tone it was given (or its start's).
+  const own = r() < 0.7 || !BUILT_IN.has(kind);
+  a.skin = vivid(SKIN[own ? one(t.skin) : Math.floor(r() * SKIN.length)], 1.18);
   const raw = v => Array.isArray(v) ? pick(r, v) : v;            // a metal or a light is used as given, never made more vivid
   a.metal = raw(t.metal) || null; a.glow = raw(t.glow) || null;  // a cyborg: metal where skin would be, eyes that glow
   if (a.metal) a.skin = a.metal;
